@@ -85,6 +85,7 @@ export async function POST(request) {
     }
 
     // 3. Pin to Pinata IPFS Cloud if Pinata JWT is present
+    let pinataErrorReason = "";
     if (pinataJwt) {
       try {
         if (!isJSON) {
@@ -133,6 +134,11 @@ export async function POST(request) {
           } else {
             const errText = await pinataRes.text();
             console.warn(`Pinata pinFileToIPFS returned ${pinataRes.status}: ${errText}`);
+            if (errText.includes("NO_SCOPES_FOUND")) {
+              pinataErrorReason = "Your Pinata key is missing 'Admin' / Pinning permissions (NO_SCOPES_FOUND). When generating a new key on pinata.cloud/keys, toggle 'Admin' on.";
+            } else {
+              pinataErrorReason = `Pinata error (${pinataRes.status}): ${errText}`;
+            }
           }
         } else {
           // JSON upload via pinJSONToIPFS
@@ -195,7 +201,7 @@ export async function POST(request) {
       fileName,
       timestamp: new Date().toISOString(),
       pinned: false,
-      note: pinataJwt ? "Pinata call failed, computed deterministic IPFS CID" : "Configure Pinata JWT in settings for persistent IPFS pinning",
+      note: pinataErrorReason || (pinataJwt ? "Pinata call failed, computed deterministic IPFS CID" : "Configure Pinata JWT in settings for persistent IPFS pinning"),
     });
   } catch (err) {
     console.error("IPFS Route Error:", err);
