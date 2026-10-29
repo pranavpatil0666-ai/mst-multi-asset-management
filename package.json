@@ -1,0 +1,21 @@
+{
+  "name": "mst-multi-asset-management",
+  "version": "1.0.0",
+  "description": "Universal Multi-Asset Management System on MST Blockchain",
+  "main": "index.js",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network mstTestnet",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mstMainnet"
+  },
+  "keywords": ["mst-blockchain", "rwa", "carbon-credits", "credentials", "land-registry"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^5.0.0",
+    "@openzeppelin/contracts": "^5.6.1",
+    "dotenv": "^18.0.9",
+    "hardhat": "^2.29.1"
+  }
+}

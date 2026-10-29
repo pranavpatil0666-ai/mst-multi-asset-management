@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Next.js build output & cache
+frontend/.next/
+frontend/out/
+
+# Hardhat build artifacts & cache
+artifacts/
+cache/
+
+# Environment files
+.env
+.env*.local
+
+# Deployments local
+deployments/localhost.json
+deployments/hardhat.json
+
+# Unrelated dump
+dump.json
+
+# OS files
+.DS_Store
+Thumbs.db
