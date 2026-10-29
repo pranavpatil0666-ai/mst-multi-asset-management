@@ -39,6 +39,9 @@ import {
   UserCheck,
   Shield,
   ShieldAlert,
+  Menu,
+  X,
+  Copy,
 } from "lucide-react";
 import {
   MST_NETWORKS,
@@ -79,6 +82,15 @@ export default function Home() {
   const [txLoading, setTxLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
   const [showPinataModal, setShowPinataModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+
+  function copyWalletAddress() {
+    if (!account) return;
+    navigator.clipboard.writeText(account);
+    setCopiedAddress(true);
+    setTimeout(() => setCopiedAddress(false), 1500);
+  }
 
   // Pinata Cloud IPFS Configuration State
   const [pinataJwtInput, setPinataJwtInput] = useState("");
@@ -816,121 +828,158 @@ export default function Home() {
       <div className="ambient-orb w-[550px] h-[550px] bg-red-700/10 bottom-20 left-1/3" />
       <div className="ambient-orb w-[450px] h-[450px] bg-[#9D1C1F]/15 top-1/2 left-10" />
 
-      {/* Top Glass Navigation Bar */}
-      <header className="sticky top-0 z-50 px-6 py-4 border-b border-red-500/15 bg-[#0c0a0e]/80 backdrop-blur-2xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          {/* Logo & Protocol Title */}
+      {/* Top Luxury Glass Navigation Bar / Head Panel */}
+      <header className="sticky top-0 z-50 border-b border-red-500/20 bg-[#0c0a0e]/90 backdrop-blur-3xl shadow-[0_10px_35px_rgba(0,0,0,0.7)] transition-all duration-300">
+        {/* Top ambient highlight line */}
+        <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3.5 flex items-center justify-between gap-4">
+          {/* Brand Logo & Title with 3D Holographic Sheen */}
           <button
-            onClick={() => setActiveTab("landing")}
-            className="flex items-center space-x-3.5 text-left group"
+            onClick={() => {
+              setActiveTab("landing");
+              setMobileMenuOpen(false);
+            }}
+            className="flex items-center space-x-3.5 text-left group/brand shrink-0"
           >
-            <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-[#9D1C1F] via-[#e52e2e] to-[#ff3b3b] p-[1.5px] shadow-lg shadow-red-600/30 group-hover:scale-105 transition">
-              <div className="h-full w-full rounded-[14px] bg-[#0c0a0e] flex items-center justify-center font-black text-base tracking-wider">
-                <span className="text-white">M</span>
-                <span className="text-[#e52e2e]">S</span>
-                <span className="text-white">T</span>
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-tr from-[#9D1C1F] via-[#e52e2e] to-[#ff4d4d] rounded-2xl opacity-60 blur-[3px] group-hover/brand:opacity-100 group-hover/brand:blur-[6px] transition-all duration-300" />
+              <div className="relative h-11 w-11 rounded-2xl bg-gradient-to-br from-[#1c1218] via-[#0d090d] to-[#150a0f] border border-red-500/30 flex items-center justify-center font-black text-base tracking-wider shadow-inner group-hover/brand:scale-105 transition-transform duration-300">
+                <span className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">M</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-b from-[#ff5252] to-[#e52e2e] drop-shadow-[0_0_8px_rgba(229,46,46,0.6)]">S</span>
+                <span className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">T</span>
               </div>
             </div>
-            <div>
+
+            <div className="flex flex-col">
               <div className="flex items-center space-x-2">
                 <span className="font-black text-base tracking-tight text-white uppercase font-sans">
-                  MST <span className="text-[#e52e2e]">BLOCKCHAIN</span>
+                  MST <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3b3b] via-[#e52e2e] to-[#ff7a7a]">BLOCKCHAIN</span>
                 </span>
-                <span className="text-[10px] font-bold tracking-wider bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full uppercase">
-                  Asset Hub
+                <span className="inline-flex items-center space-x-1.5 text-[9px] font-extrabold tracking-wider bg-red-500/15 text-red-300 border border-red-500/35 px-2.5 py-0.5 rounded-full uppercase shadow-[0_0_12px_rgba(229,46,46,0.25)]">
+                  <span className="h-1.5 w-1.5 rounded-full bg-red-500 animate-pulse"></span>
+                  <span>Asset Hub</span>
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium">Universal Multi-Asset Platform</p>
+              <div className="flex items-center space-x-2 text-[10px] text-slate-400 font-medium">
+                <span>Universal Multi-Asset Platform</span>
+                <span className="text-slate-600 hidden sm:inline">•</span>
+                <span className="text-red-400/90 font-mono text-[9px] hidden sm:inline">EVM L1</span>
+              </div>
             </div>
           </button>
 
-          {/* Navigation Links */}
-          <nav className="hidden lg:flex items-center space-x-1 glass-pill px-3 py-1.5 rounded-xl text-xs font-semibold">
-            <button
-              onClick={() => setActiveTab("landing")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "landing" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Overview
-            </button>
-            <button
-              onClick={() => setActiveTab("portfolio")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "portfolio" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Portfolio
-            </button>
-            <button
-              onClick={() => setActiveTab("institution")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "institution" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Issuance Portal
-            </button>
-            <button
-              onClick={() => setActiveTab("marketplace")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "marketplace" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Marketplace
-            </button>
-            <button
-              onClick={() => setActiveTab("admin")}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "admin" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
-              }`}
-            >
-              Roles & Admin
-            </button>
+          {/* Desktop Navigation Links (Pill Dock) */}
+          <nav className="hidden lg:flex items-center p-1.5 rounded-2xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-2xl shadow-[inset_0_1px_1px_rgba(255,255,255,0.08),0_8px_20px_rgba(0,0,0,0.4)] gap-1">
+            {[
+              { id: "landing", label: "Overview", icon: Globe },
+              { id: "portfolio", label: "Portfolio", icon: Layers },
+              { id: "institution", label: "Issuance", icon: Building2 },
+              { id: "marketplace", label: "Marketplace", icon: Store, badge: "MSTC" },
+              { id: "admin", label: "Roles & Admin", icon: ShieldCheck },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`relative flex items-center space-x-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#e52e2e] via-[#ff3b3b] to-[#b91c1c] text-white shadow-[0_0_18px_rgba(229,46,46,0.45),inset_0_1px_1px_rgba(255,255,255,0.3)] scale-[1.02]"
+                      : "text-slate-400 hover:text-white hover:bg-white/[0.06]"
+                  }`}
+                >
+                  <Icon className={`h-3.5 w-3.5 ${isActive ? "text-white" : "text-slate-400"}`} />
+                  <span>{tab.label}</span>
+                  {tab.badge && (
+                    <span
+                      className={`text-[9px] px-1.5 py-0.5 rounded-md font-mono font-bold ${
+                        isActive ? "bg-white/20 text-white" : "bg-red-500/20 text-red-300 border border-red-500/30"
+                      }`}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </nav>
 
-          {/* Action Tools & Wallet */}
-          <div className="flex items-center space-x-3">
-
+          {/* Action Tools & Connected Wallet */}
+          <div className="flex items-center space-x-2.5">
+            {/* Pinata IPFS Status Button */}
             <button
               onClick={() => setShowPinataModal(!showPinataModal)}
               title="Pinata IPFS Cloud Settings"
-              className={`glass-pill px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 transition ${
-                pinataConfigured ? "text-red-300 border-red-500/40 bg-red-500/10" : "text-slate-300 hover:text-white"
+              className={`relative group px-3 py-2 rounded-xl text-xs flex items-center space-x-2 transition-all duration-200 border ${
+                pinataConfigured
+                  ? "bg-cyan-500/10 text-cyan-300 border-cyan-500/30 hover:bg-cyan-500/20 shadow-[0_0_15px_rgba(6,182,212,0.15)]"
+                  : "bg-white/[0.03] text-slate-300 border-white/10 hover:border-red-500/30 hover:text-white"
               }`}
             >
-              <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
-              <span className="hidden sm:inline font-medium">Pinata IPFS</span>
-              <span className={`h-1.5 w-1.5 rounded-full ${pinataConfigured ? "bg-red-500 shadow-sm shadow-red-500" : "bg-amber-400"}`} />
+              <UploadCloud className={`h-3.5 w-3.5 ${pinataConfigured ? "text-cyan-400 group-hover:scale-110" : "text-slate-400"} transition-transform`} />
+              <span className="hidden xl:inline font-semibold">IPFS</span>
+              <span className="relative flex h-2 w-2">
+                {pinataConfigured && (
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+                )}
+                <span className={`relative inline-flex rounded-full h-2 w-2 ${pinataConfigured ? "bg-cyan-400" : "bg-amber-400"}`}></span>
+              </span>
             </button>
 
+            {/* Contract Settings Gear */}
             <button
               onClick={() => setShowConfig(!showConfig)}
               title="Contract Addresses"
-              className="glass-pill p-2 rounded-xl text-slate-400 hover:text-white transition"
+              className="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 text-slate-400 hover:text-white hover:border-red-500/30 hover:bg-red-500/10 transition-all duration-200 group"
             >
-              <Settings className="h-4 w-4" />
+              <Settings className="h-4 w-4 group-hover:rotate-90 transition-transform duration-300 text-slate-400 group-hover:text-red-400" />
             </button>
 
+            {/* Wallet Section */}
             {account ? (
               <div className="flex items-center space-x-2">
-                <div className="flex items-center space-x-2 glass-pill rounded-xl px-3.5 py-2 text-xs">
-                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse shadow-sm shadow-red-500"></div>
-                  <span className="font-mono text-slate-300">{account.slice(0, 6)}...{account.slice(-4)}</span>
-                  <span className="text-[#ff3b3b] font-bold">({parseFloat(balance).toFixed(2)} MSTC)</span>
+                {/* Account & MSTC Balance Dual Capsule */}
+                <div className="flex items-center rounded-2xl p-1 bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+                  <button
+                    onClick={copyWalletAddress}
+                    title="Click to copy wallet address"
+                    className="flex items-center space-x-2 px-3 py-1.5 text-xs hover:text-white transition group/acc"
+                  >
+                    <div className="relative flex h-2 w-2">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-sm shadow-emerald-500"></span>
+                    </div>
+                    <span className="font-mono text-slate-200 font-semibold group-hover/acc:text-white">
+                      {account.slice(0, 6)}...{account.slice(-4)}
+                    </span>
+                    {copiedAddress ? (
+                      <Check className="h-3 w-3 text-emerald-400 ml-1" />
+                    ) : (
+                      <Copy className="h-3 w-3 text-slate-500 group-hover/acc:text-slate-300 ml-1" />
+                    )}
+                  </button>
+
+                  <div className="bg-gradient-to-r from-red-600/20 to-red-500/10 border border-red-500/30 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center space-x-1.5 text-[#ff4d4d] shadow-[0_0_12px_rgba(229,46,46,0.2)]">
+                    <Flame className="h-3.5 w-3.5 text-[#ff3b3b]" />
+                    <span>{parseFloat(balance).toFixed(2)} MSTC</span>
+                  </div>
                 </div>
 
+                {/* Role Privilege Badge */}
                 <div
                   onClick={() => setActiveTab("admin")}
-                  className={`hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition shadow-sm ${
+                  className={`hidden sm:flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold cursor-pointer transition-all duration-200 border shadow-md ${
                     userRoles.isAdmin
-                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30"
+                      ? "bg-purple-500/15 text-purple-200 border-purple-500/40 hover:bg-purple-500/25 shadow-purple-500/10"
                       : userRoles.isUniversity
-                      ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30"
+                      ? "bg-indigo-500/15 text-indigo-200 border-indigo-500/40 hover:bg-indigo-500/25 shadow-indigo-500/10"
                       : userRoles.isCarbonAuditor
-                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
+                      ? "bg-emerald-500/15 text-emerald-200 border-emerald-500/40 hover:bg-emerald-500/25 shadow-emerald-500/10"
                       : userRoles.isLandRegistrar
-                      ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30"
-                      : "bg-white/[0.05] text-slate-400 border border-white/10 hover:text-slate-200"
+                      ? "bg-sky-500/15 text-sky-200 border-sky-500/40 hover:bg-sky-500/25 shadow-sky-500/10"
+                      : "bg-white/[0.04] text-slate-300 border-white/10 hover:border-red-500/30 hover:text-white"
                   }`}
                   title="Your Active Protocol Role (Click to manage)"
                 >
@@ -966,14 +1015,73 @@ export default function Home() {
               <button
                 onClick={connectWallet}
                 disabled={loading}
-                className="mst-btn-primary px-4 py-2 text-xs flex items-center space-x-1.5 transition active:scale-95 shadow-md shadow-red-600/25"
+                className="relative group overflow-hidden rounded-xl p-[1px] font-bold text-xs transition-all duration-300 active:scale-95 shadow-[0_0_20px_rgba(229,46,46,0.35)] hover:shadow-[0_0_30px_rgba(229,46,46,0.6)]"
               >
-                <Wallet className="h-4 w-4" />
-                <span>{loading ? "Connecting..." : "Connect MST Wallet"}</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-[#ff3b3b] via-[#e52e2e] to-[#9D1C1F] group-hover:opacity-100 transition-opacity" />
+                <div className="relative px-4 py-2.5 rounded-[11px] bg-gradient-to-r from-[#e52e2e] to-[#b91c1c] text-white flex items-center space-x-2">
+                  {loading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                  ) : (
+                    <Wallet className="h-3.5 w-3.5 text-white group-hover:scale-110 transition-transform" />
+                  )}
+                  <span className="tracking-wide">{loading ? "Connecting..." : "Connect MST Wallet"}</span>
+                </div>
               </button>
             )}
+
+            {/* Mobile Menu Hamburger Button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="lg:hidden p-2.5 rounded-xl bg-white/[0.04] border border-white/10 text-slate-300 hover:text-white hover:border-red-500/30 transition"
+              aria-label="Toggle Navigation Menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5 text-red-400" /> : <Menu className="h-5 w-5 text-slate-300" />}
+            </button>
           </div>
         </div>
+
+        {/* Bottom Glowing Accent Line */}
+        <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-[#ff3b3b]/40 to-transparent" />
+
+        {/* Mobile Dropdown Navigation Drawer */}
+        {mobileMenuOpen && (
+          <div className="lg:hidden border-t border-red-500/20 bg-[#0c0a0e]/95 backdrop-blur-3xl px-4 py-4 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
+            {[
+              { id: "landing", label: "Overview", icon: Globe },
+              { id: "portfolio", label: "My Portfolio", icon: Layers },
+              { id: "institution", label: "Issuance Portal", icon: Building2 },
+              { id: "marketplace", label: "Marketplace", icon: Store, badge: "MSTC" },
+              { id: "admin", label: "Roles & Admin", icon: ShieldCheck },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold transition ${
+                    isActive
+                      ? "bg-gradient-to-r from-[#e52e2e] to-[#b91c1c] text-white shadow-lg shadow-red-600/30"
+                      : "text-slate-300 hover:text-white hover:bg-white/[0.05]"
+                  }`}
+                >
+                  <div className="flex items-center space-x-3">
+                    <Icon className="h-4 w-4" />
+                    <span>{tab.label}</span>
+                  </div>
+                  {tab.badge && (
+                    <span className="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded-md font-mono">
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
       </header>
 
       {/* Contract Settings Drawer */}
