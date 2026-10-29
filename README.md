@@ -23,7 +23,7 @@ The MST Multi-Asset Management System is structured into four decoupled, interop
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
 │                      1. PRESENTATION LAYER                             │
-│   Next.js 15 • Tailwind CSS • Space Grotesk • MST Glassmorphism UI     │
+│   Next.js 15 • BridgeKey Native Wallet & MetaMask • MST Glassmorphism  │
 │   (My Portfolio | Issuance Portal | Universal Marketplace | Admin RBAC)│
 └───────────────────────────────────┬────────────────────────────────────┘
                                     │ Web3 / Ethers.js v6
@@ -256,7 +256,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **My Multi-Asset Portfolio**: Real-time overview of owned Soulbound degrees, land parcel deeds, active carbon holdings, and permanent offset receipts.
 - **Institutional Issuance Portal**: Authorized interfaces for universities to mint degrees, auditors to issue carbon batches, and registrars to register land deeds or manage mortgage liens.
 - **MSTC RWA Marketplace**: Browse and execute atomic asset purchases with native MSTC, and list owned assets for sale.
-- **One-Click Network Switcher**: Seamlessly switches MetaMask between **MST Testnet (Chain ID 4545)** and **MST Mainnet (Chain ID 4646)**.
+- **BridgeKey Native Wallet Integration**: Seamless support for **BridgeKey Wallet** (Official MST non-custodial wallet by Masterstroke Technosoft) and MetaMask via EIP-1193 / EIP-6963 provider discovery, with 1-click network switching between **MST Testnet (Chain ID 4545)** and **MST Mainnet (Chain ID 4646)**.
 
 ---
 

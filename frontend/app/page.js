@@ -64,6 +64,14 @@ import {
 } from "ethers";
 import IPFSUploader from "../components/IPFSUploader";
 import TechnicalBackground from "../components/TechnicalBackground";
+import WalletConnectModal from "../components/WalletConnectModal";
+import {
+  detectBridgeKey,
+  getBridgeKeyProvider,
+  detectMetaMask,
+  getMetaMaskProvider,
+  BRIDGEKEY_CONFIG,
+} from "../lib/bridgekey";
 import {
   getIPFSGatewayUrl,
   formatIPFSDisplay,
@@ -84,6 +92,34 @@ export default function Home() {
   const [showPinataModal, setShowPinataModal] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [copiedAddress, setCopiedAddress] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [walletType, setWalletType] = useState("bridgekey"); // 'bridgekey' | 'metamask'
+  const [eip6963Providers, setEip6963Providers] = useState([]);
+
+  // EIP-6963 Multi-Injected Wallet Discovery
+  useEffect(() => {
+    function handleEIP6963Announce(event) {
+      if (!event.detail) return;
+      setEip6963Providers((prev) => {
+        if (prev.some((p) => p.info.uuid === event.detail.info.uuid)) return prev;
+        return [...prev, event.detail];
+      });
+    }
+
+    if (typeof window !== "undefined") {
+      window.addEventListener("eip6963:announceProvider", handleEIP6963Announce);
+      window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+      const savedWallet = localStorage.getItem("mst_preferred_wallet");
+      if (savedWallet) {
+        setWalletType(savedWallet);
+      }
+
+      return () => {
+        window.removeEventListener("eip6963:announceProvider", handleEIP6963Announce);
+      };
+    }
+  }, []);
 
   function copyWalletAddress() {
     if (!account) return;
@@ -220,16 +256,35 @@ export default function Home() {
     registrationId: "",
   });
 
+  // Resolves active Web3 EIP-1193 Provider (BridgeKey Wallet or MetaMask)
+  const getRawWalletProvider = useCallback(
+    (targetType) => {
+      const type = targetType || walletType || "bridgekey";
+      if (type === "bridgekey") {
+        return getBridgeKeyProvider(eip6963Providers);
+      }
+      if (type === "metamask") {
+        return getMetaMaskProvider(eip6963Providers);
+      }
+      return (
+        getBridgeKeyProvider(eip6963Providers) ||
+        getMetaMaskProvider(eip6963Providers) ||
+        (typeof window !== "undefined" ? window.ethereum : null)
+      );
+    },
+    [walletType, eip6963Providers]
+  );
+
   // Helper to get BrowserProvider and Signer
   const getProviderAndSigner = useCallback(async () => {
-    if (typeof window === "undefined" || !window.ethereum) {
-      throw new Error("No Web3 wallet found. Please install MetaMask.");
+    const raw = getRawWalletProvider();
+    if (!raw) {
+      throw new Error("No Web3 wallet found. Please install BridgeKey Wallet (Official MST Native Wallet) or MetaMask.");
     }
-    // Ethers imported top-level
-    const provider = new BrowserProvider(window.ethereum);
+    const provider = new BrowserProvider(raw);
     const signer = await provider.getSigner();
     return { provider, signer };
-  }, []);
+  }, [getRawWalletProvider]);
 
   // Fetch REAL Live Data from MST Blockchain
   const fetchOnChainData = useCallback(async (currentAccount, provider) => {
@@ -423,39 +478,105 @@ export default function Home() {
     }
   }, [addresses]);
 
-  // Connect Wallet
-  async function connectWallet() {
+  // Connect with specific wallet (BridgeKey or MetaMask)
+  async function connectWithWallet(selectedType = "bridgekey") {
     try {
-      const { provider } = await getProviderAndSigner();
-      const accounts = await provider.send("eth_requestAccounts", []);
-      const network = await provider.getNetwork();
+      setLoading(true);
+      setShowWalletModal(false);
+
+      const targetType = selectedType || "bridgekey";
+      setWalletType(targetType);
+      if (typeof window !== "undefined") {
+        localStorage.setItem("mst_preferred_wallet", targetType);
+      }
+
+      const raw = getRawWalletProvider(targetType);
+      if (!raw) {
+        setShowWalletModal(true);
+        setStatusMsg(
+          targetType === "bridgekey"
+            ? "BridgeKey Wallet not detected. Please install the BridgeKey extension."
+            : "MetaMask not detected. Please install MetaMask."
+        );
+        setLoading(false);
+        return;
+      }
+
+      const browserProvider = new BrowserProvider(raw);
+      const accounts = await browserProvider.send("eth_requestAccounts", []);
+      const network = await browserProvider.getNetwork();
 
       const userAddr = accounts[0];
       setAccount(userAddr);
       setChainId(Number(network.chainId));
-      setStatusMsg("Connected to MST Blockchain!");
 
-      await fetchOnChainData(userAddr, provider);
+      const label = targetType === "bridgekey" ? "BridgeKey Wallet (Native MST)" : "MetaMask";
+      setStatusMsg(`Connected with ${label}!`);
+
+      // If chainId is not MST, prompt user to add/switch to MST Testnet (Chain ID 4545)
+      const currentChainNum = Number(network.chainId);
+      if (
+        currentChainNum !== MST_NETWORKS.testnet.chainIdDecimal &&
+        currentChainNum !== MST_NETWORKS.mainnet.chainIdDecimal
+      ) {
+        await switchNetwork("testnet", raw);
+      }
+
+      await fetchOnChainData(userAddr, browserProvider);
     } catch (err) {
       console.error(err);
       setStatusMsg("Connection error: " + (err.reason || err.message));
+    } finally {
+      setLoading(false);
     }
   }
 
-  // Network Switcher
-  async function switchNetwork(networkKey) {
-    if (!window.ethereum) return;
+  // Generic connect action (opens selector modal)
+  function connectWallet() {
+    setShowWalletModal(true);
+  }
+
+  // Disconnect active wallet session
+  function disconnectWallet() {
+    setAccount("");
+    setBalance("0");
+    setChainId(null);
+    setUserRoles({
+      isAdmin: false,
+      isUniversity: false,
+      isCarbonAuditor: false,
+      isLandRegistrar: false,
+    });
+    setDegrees([]);
+    setLandParcels([]);
+    setCarbonCredits([]);
+    setRetirementReceipts([]);
+    setShowWalletModal(false);
+    setStatusMsg("Wallet disconnected.");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("mst_preferred_wallet");
+    }
+  }
+
+  // Network Switcher for active provider
+  async function switchNetwork(networkKey, explicitProvider = null) {
+    const raw = explicitProvider || getRawWalletProvider();
+    if (!raw) return;
     const netConfig = MST_NETWORKS[networkKey];
     try {
-      await window.ethereum.request({
+      await raw.request({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: netConfig.chainId }],
       });
       setStatusMsg(`Switched to ${netConfig.chainName}!`);
     } catch (switchError) {
-      if (switchError.code === 4902) {
+      if (
+        switchError.code === 4902 ||
+        switchError.message?.includes("Unrecognized chain") ||
+        switchError.message?.includes("wallet_addEthereumChain")
+      ) {
         try {
-          await window.ethereum.request({
+          await raw.request({
             method: "wallet_addEthereumChain",
             params: [
               {
@@ -801,21 +922,29 @@ export default function Home() {
 
   // Auto-connect and load if provider is available
   useEffect(() => {
-    if (typeof window !== "undefined" && window.ethereum) {
-      window.ethereum.on("accountsChanged", (accs) => {
+    const raw = getRawWalletProvider();
+    if (raw && typeof raw.on === "function") {
+      const handleAccounts = (accs) => {
         if (accs.length > 0) {
           setAccount(accs[0]);
           getProviderAndSigner().then(({ provider }) => fetchOnChainData(accs[0], provider));
         } else {
-          setAccount("");
-          setDegrees([]);
-          setLandParcels([]);
-          setRetirementReceipts([]);
+          disconnectWallet();
         }
-      });
-      window.ethereum.on("chainChanged", () => window.location.reload());
+      };
+      const handleChain = () => window.location.reload();
+
+      raw.on("accountsChanged", handleAccounts);
+      raw.on("chainChanged", handleChain);
+
+      return () => {
+        if (typeof raw.removeListener === "function") {
+          raw.removeListener("accountsChanged", handleAccounts);
+          raw.removeListener("chainChanged", handleChain);
+        }
+      };
     }
-  }, [getProviderAndSigner, fetchOnChainData]);
+  }, [getRawWalletProvider, getProviderAndSigner, fetchOnChainData]);
 
   return (
     <div className="relative min-h-screen bg-[#08080c] text-slate-100 overflow-x-hidden font-sans">
@@ -943,10 +1072,21 @@ export default function Home() {
                 {/* Account & MSTC Balance Dual Capsule */}
                 <div className="flex items-center rounded-2xl p-1 bg-gradient-to-b from-white/[0.06] to-white/[0.02] border border-white/10 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
                   <button
-                    onClick={copyWalletAddress}
-                    title="Click to copy wallet address"
-                    className="flex items-center space-x-2 px-3 py-1.5 text-xs hover:text-white transition group/acc"
+                    onClick={() => setShowWalletModal(true)}
+                    title="Click to view wallet details & switch network"
+                    className="flex items-center space-x-2 px-2.5 py-1.5 text-xs hover:text-white transition group/acc"
                   >
+                    {/* Wallet provider mini badge */}
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md border flex items-center space-x-1 ${
+                        walletType === "bridgekey"
+                          ? "bg-red-500/20 text-red-300 border-red-500/40"
+                          : "bg-amber-500/20 text-amber-300 border-amber-500/40"
+                      }`}
+                    >
+                      <span>{walletType === "bridgekey" ? "BridgeKey" : "MetaMask"}</span>
+                    </span>
+
                     <div className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 shadow-sm shadow-emerald-500"></span>
@@ -954,10 +1094,17 @@ export default function Home() {
                     <span className="font-mono text-slate-200 font-semibold group-hover/acc:text-white">
                       {account.slice(0, 6)}...{account.slice(-4)}
                     </span>
+                  </button>
+
+                  <button
+                    onClick={copyWalletAddress}
+                    title="Copy Address"
+                    className="p-1.5 text-slate-400 hover:text-white transition rounded-lg hover:bg-white/5"
+                  >
                     {copiedAddress ? (
-                      <Check className="h-3 w-3 text-emerald-400 ml-1" />
+                      <Check className="h-3 w-3 text-emerald-400" />
                     ) : (
-                      <Copy className="h-3 w-3 text-slate-500 group-hover/acc:text-slate-300 ml-1" />
+                      <Copy className="h-3 w-3" />
                     )}
                   </button>
 
@@ -1333,6 +1480,7 @@ export default function Home() {
               </p>
               <div className="flex flex-wrap items-center justify-center gap-2">
                 {[
+                  "BridgeKey Wallet (Native MST)",
                   "SARAL Protocol",
                   "WASMify",
                   "FortunaX",
@@ -1345,7 +1493,11 @@ export default function Home() {
                 ].map((partner) => (
                   <span
                     key={partner}
-                    className="glass-pill px-3 py-1 rounded-lg text-[11px] font-semibold text-slate-300 border border-white/10 hover:border-red-500/30 hover:text-white transition"
+                    className={`glass-pill px-3 py-1 rounded-lg text-[11px] font-semibold border transition ${
+                      partner.includes("BridgeKey")
+                        ? "text-red-300 border-red-500/40 bg-red-500/10 shadow-sm shadow-red-600/20"
+                        : "text-slate-300 border-white/10 hover:border-red-500/30 hover:text-white"
+                    }`}
                   >
                     {partner}
                   </span>
@@ -1377,6 +1529,56 @@ export default function Home() {
               </div>
             </div>
           </section>
+
+          {/* Official BridgeKey Wallet Showcase */}
+          <div className="glass-panel rounded-3xl p-6 md:p-8 border-red-500/30 bg-gradient-to-r from-[#170c12]/90 via-[#0e0a12]/90 to-[#12080e]/90 flex flex-col md:flex-row items-center justify-between gap-6 shadow-2xl shadow-red-950/40">
+            <div className="flex items-center space-x-5">
+              <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-[#9D1C1F] via-[#e52e2e] to-[#ff4d4d] p-[2px] shadow-xl shadow-red-600/30 shrink-0">
+                <div className="h-full w-full rounded-[14px] bg-[#0c0a0e] flex items-center justify-center font-black text-2xl text-white">
+                  <span className="text-white">B</span>
+                  <span className="text-[#ff3b3b]">K</span>
+                </div>
+              </div>
+              <div>
+                <div className="flex items-center space-x-2.5">
+                  <h3 className="text-lg md:text-xl font-black text-white tracking-tight">
+                    BridgeKey Wallet Integration
+                  </h3>
+                  <span className="text-[10px] font-extrabold uppercase bg-red-500/20 text-red-300 border border-red-500/40 px-2.5 py-0.5 rounded-full">
+                    ⭐ Official Native MST
+                  </span>
+                </div>
+                <p className="text-xs text-slate-300 mt-1 max-w-xl">
+                  Built natively for the MST Blockchain ecosystem by Masterstroke Technosoft. Manage Soulbound Degrees, Cadastral Deeds, and Carbon Offsets with zero-configuration network switching across 95+ EVM chains.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center space-x-3 shrink-0 w-full md:w-auto">
+              <button
+                onClick={() => {
+                  if (detectBridgeKey(eip6963Providers)) {
+                    connectWithWallet("bridgekey");
+                  } else {
+                    setShowWalletModal(true);
+                  }
+                }}
+                className="w-full md:w-auto mst-btn-primary px-5 py-2.5 text-xs flex items-center justify-center space-x-2 shadow-lg shadow-red-600/30"
+              >
+                <Wallet className="h-4 w-4" />
+                <span>{detectBridgeKey(eip6963Providers) ? "Connect BridgeKey" : "Get BridgeKey Wallet"}</span>
+              </button>
+              <a
+                href="https://bridgekey.io"
+                target="_blank"
+                rel="noreferrer"
+                className="glass-pill px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white flex items-center space-x-1"
+              >
+                <span>bridgekey.io</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            </div>
+          </div>
 
           {/* Section: 4 Core Asset Classes */}
           <section className="space-y-8">
@@ -1506,13 +1708,13 @@ export default function Home() {
                   onClick={() => switchNetwork("testnet")}
                   className="glass-pill px-4 py-2 rounded-xl text-red-300 border-red-500/40 hover:bg-red-500/20 transition font-semibold"
                 >
-                  Add Testnet to MetaMask
+                  Add Testnet to Wallet
                 </button>
                 <button
                   onClick={() => switchNetwork("mainnet")}
                   className="glass-pill px-4 py-2 rounded-xl text-red-300 border-red-500/40 hover:bg-red-500/20 transition font-semibold"
                 >
-                  Add Mainnet to MetaMask
+                  Add Mainnet to Wallet
                 </button>
               </div>
             </div>
@@ -1596,6 +1798,10 @@ export default function Home() {
               <span className="text-slate-500">• Powered by MST Blockchain & Masterstroke Technosoft</span>
             </div>
             <div className="flex flex-wrap items-center gap-5">
+              <a href="https://bridgekey.io" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1 font-medium text-red-300">
+                <ExternalLink className="h-3.5 w-3.5 text-red-400" />
+                <span>BridgeKey Wallet</span>
+              </a>
               <a href="https://mstblockchain.com" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1">
                 <Globe className="h-3.5 w-3.5 text-red-400" />
                 <span>mstblockchain.com</span>
@@ -1632,14 +1838,15 @@ export default function Home() {
                 <Wallet className="h-8 w-8" />
               </div>
               <h2 className="text-xl font-bold text-white">Connect Wallet to Read On-Chain Assets</h2>
-              <p className="text-xs text-slate-400">
-                This dashboard queries directly from the MST Blockchain state machine. Connect your Web3 wallet (MetaMask) to view your verified degrees, land titles, and carbon credits.
+              <p className="text-xs text-slate-300">
+                This dashboard queries directly from the MST Blockchain state machine. Connect your Web3 wallet (<strong className="text-white">BridgeKey Wallet</strong> or MetaMask) to view your verified degrees, land titles, and carbon credits.
               </p>
               <button
-                onClick={connectWallet}
-                className="mst-btn-primary px-6 py-3 text-xs"
+                onClick={() => setShowWalletModal(true)}
+                className="mst-btn-primary px-6 py-3 text-xs flex items-center justify-center space-x-2 mx-auto shadow-lg shadow-red-600/30"
               >
-                Connect Wallet Now
+                <Wallet className="h-4 w-4" />
+                <span>Connect BridgeKey / Web3 Wallet</span>
               </button>
             </div>
           ) : (
@@ -2741,6 +2948,22 @@ export default function Home() {
           </div>
         </main>
       )}
+
+      {/* Wallet Connect & Account Management Modal */}
+      <WalletConnectModal
+        isOpen={showWalletModal}
+        onClose={() => setShowWalletModal(false)}
+        isBridgeKeyDetected={detectBridgeKey(eip6963Providers)}
+        isMetaMaskDetected={detectMetaMask(eip6963Providers)}
+        onSelectWallet={connectWithWallet}
+        activeAccount={account}
+        activeWalletType={walletType}
+        balance={balance}
+        chainId={chainId}
+        onDisconnect={disconnectWallet}
+        onSwitchNetwork={switchNetwork}
+        loading={loading}
+      />
     </div>
   );
 }
