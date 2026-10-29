@@ -11,6 +11,47 @@ The system handles diverse asset classes with purpose-built token standards, per
 
 ---
 
+## 🏗️ System Architecture
+
+The MST Multi-Asset Management System is structured into four decoupled, interoperable layers:
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                      1. PRESENTATION LAYER                             │
+│   Next.js 15 • Tailwind CSS • Space Grotesk • MST Glassmorphism UI     │
+│   (My Portfolio | Issuance Portal | Universal Marketplace | Admin RBAC)│
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ Web3 / Ethers.js v6
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                  2. DECENTRALIZED STORAGE LAYER                        │
+│   Pinata IPFS Cloud Dedicated Gateway (gateway.pinata.cloud)           │
+│   • Encrypted Transcripts  • GIS Cadastral Deeds  • Carbon Audits      │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ IPFS CIDs & Cryptographic Hashes
+┌───────────────────────────────────▼────────────────────────────────────┐
+│              3. SMART CONTRACT & SETTLEMENT LAYER (EVM)                │
+│                                                                        │
+│   [Access Control]            [Asset Standard Contracts]               │
+│   AuthorityRegistry.sol       ├── AcademicDegreeCertificate (ERC-5192) │
+│   ├── UNIVERSITY_ROLE         ├── CarbonCreditBatch (ERC-1155)         │
+│   ├── CARBON_AUDITOR_ROLE     ├── CarbonRetirementReceipt (Soulbound)  │
+│   └── LAND_REGISTRAR_ROLE     └── LandOwnershipTitle (ERC-721 + Lien)  │
+│                                                                        │
+│   [Aggregation & Marketplace]                                          │
+│   ├── UniversalAssetManager.sol (Multi-standard portfolio reader)      │
+│   └── UniversalMarketplace.sol (Escrow & Settlement in native MSTC)   │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │ JSON-RPC (Chain ID: 4545 / 4646)
+┌───────────────────────────────────▼────────────────────────────────────┐
+│                    4. MST BLOCKCHAIN LAYER 1                           │
+│   Consensus: PoSA • Throughput: 4,000+ TPS • Block Time: ~3 Seconds   │
+│   Native Currency: MSTC / tMSTC • EVM Cancun (Solidity 0.8.24)         │
+│   Explorers: testnet.mstscan.com / mstscan.com                         │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
 ## 🏛️ Smart Contract Architecture
 
 ```
@@ -28,6 +69,89 @@ contracts/
 │   └── UniversalAssetManager.sol      # Unified multi-asset portfolio aggregator
 └── marketplace/
     └── UniversalMarketplace.sol       # Native MSTC trading & escrow for transferable assets
+```
+
+---
+
+## 🔄 Lifecycle Workflows
+
+### 1. Institutional Notarization & RBAC Workflow
+```
+[Protocol Admin]
+       │
+       ▼
+AuthorityRegistry.registerAuthority(address, role, name, jurisdiction, website, regId)
+       │
+       ├─► Grants specialized role (UNIVERSITY_ROLE, CARBON_AUDITOR_ROLE, or LAND_REGISTRAR_ROLE)
+       ├─► Saves authority profile with legal jurisdiction and verification registration ID
+       └─► Target authority address is now cryptographically authorized to issue on-chain assets
+```
+
+### 2. Academic Credential Workflow (Soulbound ERC-5192)
+```
+[Accredited University]
+       │
+       ├─► 1. Pins student transcript PDF to Pinata IPFS (generates ipfs:// URI)
+       ├─► 2. Computes keccak256 hash of Student ID for privacy preservation
+       │
+       ▼
+AcademicDegreeCertificate.issueDegree(studentWallet, studentName, studentIdHash, degree, major, date, ipfsUri)
+       │
+       ├─► Verifies caller holds active UNIVERSITY_ROLE in AuthorityRegistry
+       ├─► Emits ERC-5192 Locked(tokenId) event
+       └─► Permanently binds non-transferable diploma to student address (anti-credential fraud)
+```
+
+### 3. Carbon Credit & Permanent Retirement Workflow (ERC-1155 & Soulbound)
+```
+[Certified Carbon Auditor]
+       │
+       ├─► 1. Validates environmental project (Verra VCS / Gold Standard)
+       ├─► 2. Uploads third-party methodology & audit report to Pinata IPFS
+       ▼
+CarbonCreditBatch.createAndMintBatch(recipient, projectId, standard, vintage, tonnes, ipfsUri)
+       │
+       ├─► Verifies caller holds CARBON_AUDITOR_ROLE
+       ├─► Mints ERC-1155 batch credits to project developer
+       │
+       ▼
+[Trading & Offsetting]
+       │
+       ├─► Developer lists credits on UniversalMarketplace in native MSTC
+       ▼
+[Corporate Offset Buyer]
+       │
+       ▼
+CarbonCreditBatch.retireCredits(tokenId, tonnes, beneficiaryName, retirementReason)
+       │
+       ├─► Permanently burns ERC-1155 tokens on-chain (guaranteeing zero double-spending)
+       └─► Calls CarbonRetirementReceipt.sol to mint a non-transferable Soulbound Proof-of-Offset
+```
+
+### 4. Cadastral Land Title & Mortgage Encumbrance Workflow (ERC-721)
+```
+[Municipal Land Registrar]
+       │
+       ├─► 1. Verifies cadastral deed survey and GIS polygon boundaries
+       ├─► 2. Pins deed survey documents to Pinata IPFS
+       ▼
+LandOwnershipTitle.registerLand(ownerWallet, parcelIdentifier, jurisdiction, areaSqM, ipfsUri)
+       │
+       ├─► Verifies caller holds LAND_REGISTRAR_ROLE
+       ├─► Mints unique 1-of-1 ERC-721 Property Deed to owner
+       │
+       ▼
+[Mortgage / Lien Security Mechanism]
+       │
+       ├─► Bank / Court notices active lien -> Registrar calls setEncumbrance(tokenId, true, reason)
+       ├─► On-chain transfer hook halts all transfer / marketplace attempts (anti-fraud protection)
+       │
+       ▼
+[Lien Clearance & Marketplace Settlement]
+       │
+       ├─► Mortgage cleared -> Registrar calls setEncumbrance(tokenId, false, "Lien Cleared")
+       ├─► Owner approves & lists Land Title on UniversalMarketplace
+       └─► Buyer purchases atomically with native MSTC; title transfers automatically
 ```
 
 ---
@@ -110,4 +234,3 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Institutional Issuance Portal**: Authorized interfaces for universities to mint degrees, auditors to issue carbon batches, and registrars to register land deeds or manage mortgage liens.
 - **MSTC RWA Marketplace**: Browse and execute atomic asset purchases with native MSTC, and list owned assets for sale.
 - **One-Click Network Switcher**: Seamlessly switches MetaMask between **MST Testnet (Chain ID 4545)** and **MST Mainnet (Chain ID 4646)**.
-
