@@ -30,7 +30,10 @@ import {
   BookOpen,
   ChevronRight,
   Database,
-  Check
+  Check,
+  UploadCloud,
+  Cloud,
+  Key,
 } from "lucide-react";
 import {
   MST_NETWORKS,
@@ -44,7 +47,13 @@ import {
   MARKETPLACE_ABI,
 } from "../lib/contracts";
 import IPFSUploader from "../components/IPFSUploader";
-import { getIPFSGatewayUrl, formatIPFSDisplay } from "../lib/ipfs";
+import {
+  getIPFSGatewayUrl,
+  formatIPFSDisplay,
+  getPinataConfig,
+  savePinataConfig,
+  testPinataAuth,
+} from "../lib/ipfs";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("landing"); // 'landing' | 'portfolio' | 'institution' | 'marketplace'
@@ -55,6 +64,56 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [txLoading, setTxLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
+  const [showPinataModal, setShowPinataModal] = useState(false);
+
+  // Pinata Cloud IPFS Configuration State
+  const [pinataJwtInput, setPinataJwtInput] = useState("");
+  const [pinataGatewayInput, setPinataGatewayInput] = useState("gateway.pinata.cloud");
+  const [pinataConfigured, setPinataConfigured] = useState(false);
+  const [pinataTesting, setPinataTesting] = useState(false);
+  const [pinataTestResult, setPinataTestResult] = useState(null);
+
+  // Load Pinata config from client storage on mount
+  useEffect(() => {
+    const cfg = getPinataConfig();
+    if (cfg.jwt) {
+      setPinataJwtInput(cfg.jwt);
+      setPinataConfigured(true);
+    }
+    if (cfg.gateway) {
+      setPinataGatewayInput(cfg.gateway);
+    }
+  }, []);
+
+  async function handleTestPinata() {
+    if (!pinataJwtInput.trim()) {
+      setPinataTestResult({ success: false, msg: "Please enter a Pinata JWT token to test." });
+      return;
+    }
+    try {
+      setPinataTesting(true);
+      setPinataTestResult(null);
+      const res = await testPinataAuth(pinataJwtInput);
+      if (res.success) {
+        setPinataTestResult({ success: true, msg: res.message || "Connected to Pinata API successfully!" });
+        setPinataConfigured(true);
+      } else {
+        setPinataTestResult({ success: false, msg: res.error || "Pinata authentication failed." });
+      }
+    } catch (e) {
+      setPinataTestResult({ success: false, msg: e.message || "Failed to test Pinata connection." });
+    } finally {
+      setPinataTesting(false);
+    }
+  }
+
+  function handleSavePinata() {
+    savePinataConfig({ jwt: pinataJwtInput, gateway: pinataGatewayInput });
+    setPinataConfigured(!!pinataJwtInput.trim());
+    setStatusMsg(pinataJwtInput.trim() ? "Pinata IPFS Cloud configured successfully!" : "Pinata config cleared.");
+    setPinataTestResult(null);
+    setTimeout(() => setShowPinataModal(false), 800);
+  }
 
   // Editable Contract Addresses
   const [addresses, setAddresses] = useState(CONTRACT_ADDRESSES);
@@ -637,6 +696,18 @@ export default function Home() {
             </div>
 
             <button
+              onClick={() => setShowPinataModal(!showPinataModal)}
+              title="Pinata IPFS Cloud Settings"
+              className={`glass-pill px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 transition ${
+                pinataConfigured ? "text-emerald-300 border-emerald-500/40 bg-emerald-500/10" : "text-slate-300 hover:text-white"
+              }`}
+            >
+              <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
+              <span className="hidden sm:inline font-medium">Pinata IPFS</span>
+              <span className={`h-1.5 w-1.5 rounded-full ${pinataConfigured ? "bg-emerald-400 shadow-sm shadow-emerald-400" : "bg-amber-400"}`} />
+            </button>
+
+            <button
               onClick={() => setShowConfig(!showConfig)}
               title="Contract Addresses"
               className="glass-pill p-2 rounded-xl text-slate-400 hover:text-white transition"
@@ -690,6 +761,143 @@ export default function Home() {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Pinata IPFS Cloud Settings Drawer */}
+      {showPinataModal && (
+        <div className="relative z-40 max-w-7xl mx-auto px-6 pt-4">
+          <div className="glass-panel p-6 rounded-2xl border-cyan-500/30 bg-slate-950/80 backdrop-blur-2xl space-y-4 shadow-2xl shadow-cyan-950/40">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="p-2.5 rounded-xl bg-cyan-500/15 text-cyan-400 border border-cyan-500/30">
+                  <UploadCloud className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white flex items-center space-x-2">
+                    <span>Pinata IPFS Cloud Storage Settings</span>
+                    <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                      pinataConfigured
+                        ? "bg-emerald-500/10 text-emerald-300 border-emerald-500/30"
+                        : "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                    }`}>
+                      {pinataConfigured ? "Connected" : "Configuration Needed"}
+                    </span>
+                  </h3>
+                  <p className="text-[11px] text-slate-400">
+                    Pins degree transcripts, cadastral deed surveys, and carbon audits permanently to IPFS via Pinata.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPinataModal(false)}
+                className="text-slate-400 hover:text-white text-xs px-2.5 py-1.5 rounded-lg glass-pill transition"
+              >
+                ✕ Close
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs pt-1">
+              <div>
+                <label className="text-slate-300 block mb-1.5 font-medium flex items-center justify-between">
+                  <span className="flex items-center space-x-1.5">
+                    <Key className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>Pinata JWT API Token</span>
+                  </span>
+                  <a
+                    href="https://app.pinata.cloud/keys"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-[10px] text-cyan-400 hover:underline flex items-center space-x-1"
+                  >
+                    <span>Get Free Key on Pinata.cloud</span>
+                    <ExternalLink className="h-2.5 w-2.5" />
+                  </a>
+                </label>
+                <input
+                  type="password"
+                  value={pinataJwtInput}
+                  placeholder="Paste your Pinata JWT (eyJhbGciOi...)"
+                  onChange={(e) => setPinataJwtInput(e.target.value)}
+                  className="glass-input w-full rounded-xl px-3 py-2 text-slate-200 font-mono text-xs placeholder:text-slate-600"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Saved securely in your browser session or set as PINATA_JWT in server environment.
+                </p>
+              </div>
+
+              <div>
+                <label className="text-slate-300 block mb-1.5 font-medium flex items-center space-x-1.5">
+                  <Globe className="h-3.5 w-3.5 text-cyan-400" />
+                  <span>Pinata Gateway Domain</span>
+                </label>
+                <input
+                  type="text"
+                  value={pinataGatewayInput}
+                  placeholder="gateway.pinata.cloud or your-subdomain.mypinata.cloud"
+                  onChange={(e) => setPinataGatewayInput(e.target.value)}
+                  className="glass-input w-full rounded-xl px-3 py-2 text-slate-200 font-mono text-xs placeholder:text-slate-600"
+                />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Default: gateway.pinata.cloud (or your custom Pinata dedicated gateway).
+                </p>
+              </div>
+            </div>
+
+            {pinataTestResult && (
+              <div
+                className={`p-3 rounded-xl text-xs flex items-center space-x-2 ${
+                  pinataTestResult.success
+                    ? "bg-emerald-500/10 text-emerald-300 border border-emerald-500/30"
+                    : "bg-rose-500/10 text-rose-300 border border-rose-500/30"
+                }`}
+              >
+                {pinataTestResult.success ? (
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                ) : (
+                  <AlertTriangle className="h-4 w-4 text-rose-400 shrink-0" />
+                )}
+                <span>{pinataTestResult.msg}</span>
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between pt-2 border-t border-white/[0.06] gap-3">
+              <div className="flex items-center space-x-2 text-[11px] text-slate-400 font-mono">
+                <span className={`h-2 w-2 rounded-full ${pinataConfigured ? "bg-emerald-400 animate-pulse" : "bg-amber-400"}`}></span>
+                <span className="truncate">https://{pinataGatewayInput || "gateway.pinata.cloud"}/ipfs/</span>
+              </div>
+
+              <div className="flex items-center space-x-2.5">
+                <button
+                  type="button"
+                  onClick={handleTestPinata}
+                  disabled={pinataTesting}
+                  className="glass-pill hover:bg-white/10 text-cyan-300 px-3.5 py-1.5 rounded-xl text-xs font-semibold flex items-center space-x-1.5 transition"
+                >
+                  {pinataTesting ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <span>Testing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                      <span>Test Pinata Auth</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSavePinata}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-1.5 rounded-xl text-xs shadow-md shadow-emerald-500/20 transition flex items-center space-x-1.5"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  <span>Save Pinata Settings</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
