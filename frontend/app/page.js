@@ -884,30 +884,8 @@ export default function Home() {
             </button>
           </nav>
 
-          {/* Network Switcher & Wallet */}
+          {/* Action Tools & Wallet */}
           <div className="flex items-center space-x-3">
-            <div className="hidden md:flex items-center glass-pill rounded-xl p-1 text-xs">
-              <button
-                onClick={() => switchNetwork("testnet")}
-                className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                  chainId === 4545
-                    ? "bg-red-500/20 text-red-300 border border-red-500/40 shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                MST Testnet (4545)
-              </button>
-              <button
-                onClick={() => switchNetwork("mainnet")}
-                className={`px-3 py-1.5 rounded-lg font-medium transition ${
-                  chainId === 4646
-                    ? "bg-red-500/20 text-red-300 border border-red-500/40 shadow-sm"
-                    : "text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                MST Mainnet (4646)
-              </button>
-            </div>
 
             <button
               onClick={() => setShowPinataModal(!showPinataModal)}
