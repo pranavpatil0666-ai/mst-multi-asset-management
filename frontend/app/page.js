@@ -60,6 +60,7 @@ import {
   toUtf8Bytes,
 } from "ethers";
 import IPFSUploader from "../components/IPFSUploader";
+import TechnicalBackground from "../components/TechnicalBackground";
 import {
   getIPFSGatewayUrl,
   formatIPFSDisplay,
@@ -806,6 +807,9 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-[#08080c] text-slate-100 overflow-x-hidden font-sans">
+      {/* Interactive Technical Blockchain Canvas & Radar Background */}
+      <TechnicalBackground />
+
       {/* Background Ambient Glow Orbs */}
       <div className="ambient-orb w-[650px] h-[650px] bg-red-600/12 -top-40 -left-40" />
       <div className="ambient-orb w-[600px] h-[600px] bg-[#28276B]/20 top-96 -right-40" />
