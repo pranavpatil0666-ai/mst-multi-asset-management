@@ -1,5 +1,10 @@
 # Universal Multi-Asset Management System on MST Blockchain
 
+[![CI/CD Pipeline](https://github.com/pranavpatil0666-ai/mst-multi-asset-management/actions/workflows/ci.yml/badge.svg)](https://github.com/pranavpatil0666-ai/mst-multi-asset-management/actions/workflows/ci.yml)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-success?logo=vercel&color=000000)](https://frontend-snowy-ten-19.vercel.app)
+[![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?logo=solidity)](https://soliditylang.org/)
+[![Network](https://img.shields.io/badge/MST%20Blockchain-EVM%20L1-e52e2e)](https://mstblockchain.com)
+
 An enterprise-grade decentralized platform for managing heterogeneous real-world and digital assets on the **MST Blockchain** (EVM Layer 1).
 
 The system handles diverse asset classes with purpose-built token standards, permissioning, and lifecycle mechanics:
@@ -252,3 +257,45 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **Institutional Issuance Portal**: Authorized interfaces for universities to mint degrees, auditors to issue carbon batches, and registrars to register land deeds or manage mortgage liens.
 - **MSTC RWA Marketplace**: Browse and execute atomic asset purchases with native MSTC, and list owned assets for sale.
 - **One-Click Network Switcher**: Seamlessly switches MetaMask between **MST Testnet (Chain ID 4545)** and **MST Mainnet (Chain ID 4646)**.
+
+---
+
+## 🔁 CI/CD Automation Pipeline
+
+The repository integrates an automated enterprise GitHub Actions pipeline (`.github/workflows/ci.yml`):
+
+```
+                     ┌──────────────────────────────┐
+                     │   git push / pull_request    │
+                     └──────────────┬───────────────┘
+                                    │
+           ┌────────────────────────┴────────────────────────┐
+           ▼                                                 ▼
+┌─────────────────────────────┐                   ┌─────────────────────────────┐
+│ 1. smart-contracts-ci       │                   │ 3. security-audit           │
+│ • Hardhat Solidity compile  │                   │ • Root dependency scan      │
+│ • 14 automated unit tests   │                   │ • Frontend vulnerability    │
+│ • Gas & IR verification     │                   │   level audit               │
+└──────────┬──────────────────┘                   └─────────────────────────────┘
+           │ (on success)
+           ▼
+┌─────────────────────────────┐
+│ 2. frontend-ci              │
+│ • Node.js 20 build pipeline │
+│ • Next.js 15 static export  │
+│ • Zero-error build check    │
+└──────────┬──────────────────┘
+           │ (master branch push)
+           ▼
+┌─────────────────────────────┐
+│ 4. Vercel Continuous Deploy │
+│ • Edge CDN deployment       │
+│ • Live production sync      │
+└─────────────────────────────┘
+```
+
+### Automated Pipeline Jobs:
+1. **Smart Contracts CI**: Installs root dependencies, compiles Solidity 0.8.24 Cancun contracts with optimizer via IR, and runs all 14 unit tests covering RBAC, Soulbound restrictions, retirement burning, and marketplace trades.
+2. **Frontend CI**: Checks out code, configures Node 20 with npm caching, and builds the production Next.js 15 bundle with zero compilation errors.
+3. **Security Audit**: Scans dependencies for known CVEs and high-severity security vulnerabilities.
+4. **Vercel Continuous Deployment**: Automatically pushes production builds to the live edge URL upon merging to `master`.
