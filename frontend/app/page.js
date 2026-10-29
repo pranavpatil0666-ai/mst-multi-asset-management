@@ -51,6 +51,14 @@ import {
   ASSET_MANAGER_ABI,
   MARKETPLACE_ABI,
 } from "../lib/contracts";
+import {
+  BrowserProvider,
+  Contract,
+  formatEther,
+  parseEther,
+  keccak256,
+  toUtf8Bytes,
+} from "ethers";
 import IPFSUploader from "../components/IPFSUploader";
 import {
   getIPFSGatewayUrl,
@@ -204,7 +212,7 @@ export default function Home() {
     if (typeof window === "undefined" || !window.ethereum) {
       throw new Error("No Web3 wallet found. Please install MetaMask.");
     }
-    const { BrowserProvider } = await import("ethers");
+    // Ethers imported top-level
     const provider = new BrowserProvider(window.ethereum);
     const signer = await provider.getSigner();
     return { provider, signer };
@@ -215,7 +223,7 @@ export default function Home() {
     if (!currentAccount || !provider) return;
     try {
       setLoading(true);
-      const { Contract, formatEther } = await import("ethers");
+      // Ethers imported top-level
 
       const bal = await provider.getBalance(currentAccount);
       setBalance(formatEther(bal));
@@ -462,7 +470,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract, keccak256, toUtf8Bytes } = await import("ethers");
+      // Ethers imported top-level
 
       const studentIdHash = keccak256(toUtf8Bytes(degreeForm.studentId || "MST-STUDENT"));
       const degreeContract = new Contract(addresses.AcademicDegreeCertificate, DEGREE_ABI, signer);
@@ -497,7 +505,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
+      // Ethers imported top-level
 
       const carbonContract = new Contract(addresses.CarbonCreditBatch, CARBON_BATCH_ABI, signer);
 
@@ -532,7 +540,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
+      // Ethers imported top-level
 
       const carbonContract = new Contract(addresses.CarbonCreditBatch, CARBON_BATCH_ABI, signer);
 
@@ -564,7 +572,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
+      // Ethers imported top-level
 
       const landContract = new Contract(addresses.LandOwnershipTitle, LAND_TITLE_ABI, signer);
 
@@ -598,7 +606,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract, parseEther } = await import("ethers");
+      // Ethers imported top-level
 
       const marketplaceContract = new Contract(addresses.UniversalMarketplace, MARKETPLACE_ABI, signer);
       const priceWei = parseEther(listForm.priceInMSTC);
@@ -643,7 +651,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract, parseEther } = await import("ethers");
+      // Ethers imported top-level
 
       const marketplaceContract = new Contract(addresses.UniversalMarketplace, MARKETPLACE_ABI, signer);
       const priceWei = parseEther(listing.priceMSTC);
@@ -671,7 +679,7 @@ export default function Home() {
       setTxLoading(true);
       setStatusMsg("Submitting Authority Registration to MST Blockchain...");
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
+      // Ethers imported top-level
 
       const authorityContract = new Contract(addresses.AuthorityRegistry, AUTHORITY_REGISTRY_ABI, signer);
 
@@ -721,7 +729,7 @@ export default function Home() {
       setTxLoading(true);
       setStatusMsg(`${currentActive ? "Deactivating" : "Activating"} authority ${authorityAddr.slice(0, 8)}...`);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
+      // Ethers imported top-level
 
       const authorityContract = new Contract(addresses.AuthorityRegistry, AUTHORITY_REGISTRY_ABI, signer);
       const tx = await authorityContract.setAuthorityStatus(authorityAddr, !currentActive);
@@ -757,7 +765,7 @@ export default function Home() {
     try {
       setTxLoading(true);
       const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
+      // Ethers imported top-level
 
       const landContract = new Contract(addresses.LandOwnershipTitle, LAND_TITLE_ABI, signer);
       setStatusMsg("Updating land parcel encumbrance lien status... Confirm in wallet.");
@@ -797,34 +805,38 @@ export default function Home() {
   }, [getProviderAndSigner, fetchOnChainData]);
 
   return (
-    <div className="relative min-h-screen bg-[#050814] text-slate-100 overflow-x-hidden">
+    <div className="relative min-h-screen bg-[#08080c] text-slate-100 overflow-x-hidden font-sans">
       {/* Background Ambient Glow Orbs */}
-      <div className="ambient-orb w-[650px] h-[650px] bg-emerald-500/10 -top-40 -left-40" />
-      <div className="ambient-orb w-[600px] h-[600px] bg-indigo-600/15 top-96 -right-40" />
-      <div className="ambient-orb w-[550px] h-[550px] bg-cyan-500/10 bottom-20 left-1/3" />
-      <div className="ambient-orb w-[450px] h-[450px] bg-amber-500/10 top-1/2 left-10" />
+      <div className="ambient-orb w-[650px] h-[650px] bg-red-600/12 -top-40 -left-40" />
+      <div className="ambient-orb w-[600px] h-[600px] bg-[#28276B]/20 top-96 -right-40" />
+      <div className="ambient-orb w-[550px] h-[550px] bg-red-700/10 bottom-20 left-1/3" />
+      <div className="ambient-orb w-[450px] h-[450px] bg-[#9D1C1F]/15 top-1/2 left-10" />
 
       {/* Top Glass Navigation Bar */}
-      <header className="sticky top-0 z-50 px-6 py-4 border-b border-white/[0.08] bg-[#090e1f]/60 backdrop-blur-2xl">
+      <header className="sticky top-0 z-50 px-6 py-4 border-b border-red-500/15 bg-[#0c0a0e]/80 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Logo & Protocol Title */}
           <button
             onClick={() => setActiveTab("landing")}
             className="flex items-center space-x-3.5 text-left group"
           >
-            <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 p-[1.5px] shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
-              <div className="h-full w-full rounded-[14px] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center font-black text-emerald-400 text-lg">
-                MST
+            <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-[#9D1C1F] via-[#e52e2e] to-[#ff3b3b] p-[1.5px] shadow-lg shadow-red-600/30 group-hover:scale-105 transition">
+              <div className="h-full w-full rounded-[14px] bg-[#0c0a0e] flex items-center justify-center font-black text-base tracking-wider">
+                <span className="text-white">M</span>
+                <span className="text-[#e52e2e]">S</span>
+                <span className="text-white">T</span>
               </div>
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="font-extrabold text-lg text-white tracking-tight">MST Multi-Asset Hub</h1>
-                <span className="text-[10px] font-semibold tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase">
-                  RWA Layer 1
+                <h1 className="font-extrabold text-base tracking-tight text-white uppercase font-sans">
+                  MST <span className="text-[#e52e2e]">BLOCKCHAIN</span>
+                </h1>
+                <span className="text-[10px] font-bold tracking-wider bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full uppercase">
+                  RWA L1
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Real-World Asset & Credential Infrastructure</p>
+              <p className="text-xs text-slate-400">Multi-Asset & Credential Infrastructure</p>
             </div>
           </button>
 
@@ -833,7 +845,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTab("landing")}
               className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "landing" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+                activeTab === "landing" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
               }`}
             >
               Overview
@@ -841,7 +853,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTab("portfolio")}
               className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "portfolio" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+                activeTab === "portfolio" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
               }`}
             >
               Portfolio
@@ -849,7 +861,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTab("institution")}
               className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "institution" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+                activeTab === "institution" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
               }`}
             >
               Issuance Portal
@@ -857,7 +869,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTab("marketplace")}
               className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "marketplace" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+                activeTab === "marketplace" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
               }`}
             >
               Marketplace
@@ -865,7 +877,7 @@ export default function Home() {
             <button
               onClick={() => setActiveTab("admin")}
               className={`px-3 py-1.5 rounded-lg transition ${
-                activeTab === "admin" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+                activeTab === "admin" ? "bg-[#e52e2e] text-white shadow-md shadow-red-600/25" : "text-slate-400 hover:text-white"
               }`}
             >
               Roles & Admin
@@ -879,7 +891,7 @@ export default function Home() {
                 onClick={() => switchNetwork("testnet")}
                 className={`px-3 py-1.5 rounded-lg font-medium transition ${
                   chainId === 4545
-                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
+                    ? "bg-red-500/20 text-red-300 border border-red-500/40 shadow-sm"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -889,7 +901,7 @@ export default function Home() {
                 onClick={() => switchNetwork("mainnet")}
                 className={`px-3 py-1.5 rounded-lg font-medium transition ${
                   chainId === 4646
-                    ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
+                    ? "bg-red-500/20 text-red-300 border border-red-500/40 shadow-sm"
                     : "text-slate-400 hover:text-slate-200"
                 }`}
               >
@@ -901,12 +913,12 @@ export default function Home() {
               onClick={() => setShowPinataModal(!showPinataModal)}
               title="Pinata IPFS Cloud Settings"
               className={`glass-pill px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 transition ${
-                pinataConfigured ? "text-emerald-300 border-emerald-500/40 bg-emerald-500/10" : "text-slate-300 hover:text-white"
+                pinataConfigured ? "text-red-300 border-red-500/40 bg-red-500/10" : "text-slate-300 hover:text-white"
               }`}
             >
               <UploadCloud className="h-3.5 w-3.5 text-cyan-400" />
               <span className="hidden sm:inline font-medium">Pinata IPFS</span>
-              <span className={`h-1.5 w-1.5 rounded-full ${pinataConfigured ? "bg-emerald-400 shadow-sm shadow-emerald-400" : "bg-amber-400"}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${pinataConfigured ? "bg-red-500 shadow-sm shadow-red-500" : "bg-amber-400"}`} />
             </button>
 
             <button
@@ -920,9 +932,9 @@ export default function Home() {
             {account ? (
               <div className="flex items-center space-x-2">
                 <div className="flex items-center space-x-2 glass-pill rounded-xl px-3.5 py-2 text-xs">
-                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400"></div>
+                  <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse shadow-sm shadow-red-500"></div>
                   <span className="font-mono text-slate-300">{account.slice(0, 6)}...{account.slice(-4)}</span>
-                  <span className="text-emerald-400 font-bold">({parseFloat(balance).toFixed(2)} MSTC)</span>
+                  <span className="text-[#ff3b3b] font-bold">({parseFloat(balance).toFixed(2)} MSTC)</span>
                 </div>
 
                 <div
@@ -972,13 +984,10 @@ export default function Home() {
               <button
                 onClick={connectWallet}
                 disabled={loading}
-                className="group relative inline-flex items-center space-x-2 overflow-hidden rounded-xl p-[1px] font-medium text-xs shadow-lg shadow-emerald-500/15 transition active:scale-95"
+                className="mst-btn-primary px-4 py-2 text-xs flex items-center space-x-1.5 transition active:scale-95 shadow-md shadow-red-600/25"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-teal-400"></span>
-                <span className="relative flex items-center space-x-1.5 rounded-[11px] bg-slate-950 px-4 py-2 text-emerald-300 transition duration-200 group-hover:bg-opacity-0 group-hover:text-slate-950 font-bold">
-                  <Wallet className="h-4 w-4" />
-                  <span>{loading ? "Connecting..." : "Connect MST Wallet"}</span>
-                </span>
+                <Wallet className="h-4 w-4" />
+                <span>{loading ? "Connecting..." : "Connect MST Wallet"}</span>
               </button>
             )}
           </div>
@@ -1139,7 +1148,7 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={handleSavePinata}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-1.5 rounded-xl text-xs shadow-md shadow-emerald-500/20 transition flex items-center space-x-1.5"
+                  className="mst-btn-primary px-4 py-1.5 text-xs flex items-center space-x-1.5 shadow-md shadow-red-600/30"
                 >
                   <Check className="h-3.5 w-3.5" />
                   <span>Save Pinata Settings</span>
@@ -1153,12 +1162,12 @@ export default function Home() {
       {/* Toast Notification */}
       {statusMsg && (
         <div className="relative z-40 max-w-7xl mx-auto px-6 pt-4">
-          <div className="glass-panel border-emerald-500/30 bg-emerald-950/30 text-emerald-200 px-4 py-3 rounded-xl flex items-center justify-between text-xs shadow-lg shadow-emerald-950/40">
+          <div className="glass-panel border-red-500/30 bg-red-950/40 text-red-200 px-4 py-3 rounded-xl flex items-center justify-between text-xs shadow-lg shadow-red-950/50">
             <div className="flex items-center space-x-2.5">
               {txLoading ? (
-                <Loader2 className="h-4 w-4 text-emerald-400 animate-spin shrink-0" />
+                <Loader2 className="h-4 w-4 text-red-400 animate-spin shrink-0" />
               ) : (
-                <Sparkles className="h-4 w-4 text-emerald-400 shrink-0" />
+                <Sparkles className="h-4 w-4 text-red-400 shrink-0" />
               )}
               <span className="font-medium">{statusMsg}</span>
             </div>
@@ -1174,20 +1183,20 @@ export default function Home() {
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-20">
           {/* Hero Section */}
           <section className="text-center max-w-4xl mx-auto space-y-6 pt-6">
-            <div className="inline-flex items-center space-x-2 glass-pill px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-300 shadow-lg shadow-emerald-500/10">
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-              <span>Next-Gen RWA & Credential Infrastructure on MST Blockchain</span>
+            <div className="inline-flex items-center space-x-2 glass-pill px-4 py-1.5 rounded-full text-xs font-semibold text-red-400 border border-red-500/30 shadow-lg shadow-red-600/10">
+              <Sparkles className="h-3.5 w-3.5 text-red-500" />
+              <span>Bridging Traditional Systems and Decentralized Technology</span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.15]">
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.12] uppercase font-sans">
               Universal Multi-Asset <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
-                Management Protocol
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3b3b] via-[#e52e2e] to-white">
+                Infrastructure
               </span>
             </h1>
 
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              A decentralized framework uniting <strong>Soulbound Academic Degrees</strong>, <strong>Certified Carbon Credits</strong>, and <strong>Cadastral Land Titles</strong> on the high-throughput <strong>MST Blockchain (EVM L1)</strong>.
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto font-normal">
+              An institutional framework uniting <strong>Soulbound Academic Degrees</strong>, <strong>Certified Carbon Credits</strong>, and <strong>Cadastral Land Titles</strong> on the high-throughput <strong>MST Blockchain (EVM L1)</strong>.
             </p>
 
             {/* Hero CTAs */}
@@ -1195,7 +1204,7 @@ export default function Home() {
               {account ? (
                 <button
                   onClick={() => setActiveTab("portfolio")}
-                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-extrabold px-8 py-3.5 rounded-xl text-sm transition shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2"
+                  className="w-full sm:w-auto mst-btn-primary px-8 py-3.5 text-sm flex items-center justify-center space-x-2"
                 >
                   <span>Launch My Portfolio</span>
                   <ArrowRight className="h-4 w-4" />
@@ -1203,7 +1212,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={connectWallet}
-                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-extrabold px-8 py-3.5 rounded-xl text-sm transition shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2"
+                  className="w-full sm:w-auto mst-btn-primary px-8 py-3.5 text-sm flex items-center justify-center space-x-2"
                 >
                   <Wallet className="h-4 w-4" />
                   <span>Connect MST Wallet</span>
@@ -1212,34 +1221,61 @@ export default function Home() {
 
               <button
                 onClick={() => setActiveTab("marketplace")}
-                className="w-full sm:w-auto glass-pill hover:bg-white/[0.08] text-slate-200 font-semibold px-8 py-3.5 rounded-xl text-sm transition flex items-center justify-center space-x-2"
+                className="w-full sm:w-auto glass-pill hover:border-red-500/40 text-slate-200 font-semibold px-8 py-3.5 rounded-xl text-sm transition flex items-center justify-center space-x-2"
               >
-                <Store className="h-4 w-4 text-cyan-400" />
+                <Store className="h-4 w-4 text-[#ff3b3b]" />
                 <span>Explore MSTC Marketplace</span>
               </button>
             </div>
 
+            {/* Official Ecosystem & Partners Ticker */}
+            <div className="pt-6 border-t border-white/[0.06] max-w-3xl mx-auto">
+              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
+                MST Ecosystem & Strategic Partners
+              </p>
+              <div className="flex flex-wrap items-center justify-center gap-2">
+                {[
+                  "SARAL Protocol",
+                  "WASMify",
+                  "FortunaX",
+                  "ProofEasy",
+                  "ChainPay",
+                  "MasterStroke Academy",
+                  "QuillAudits",
+                  "Yellow Capital",
+                  "Fireblocks",
+                ].map((partner) => (
+                  <span
+                    key={partner}
+                    className="glass-pill px-3 py-1 rounded-lg text-[11px] font-semibold text-slate-300 border border-white/10 hover:border-red-500/30 hover:text-white transition"
+                  >
+                    {partner}
+                  </span>
+                ))}
+              </div>
+            </div>
+
             {/* Key Metric Badges */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 text-left">
-              <div className="glass-card p-5 rounded-2xl">
+              <div className="glass-card p-5 rounded-2xl border-white/10 hover:border-red-500/30">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Throughput</span>
                 <span className="text-2xl font-black text-white mt-1 block">4,000+ TPS</span>
-                <span className="text-xs text-emerald-400 mt-1 block">PoSA Consensus</span>
+                <span className="text-xs text-red-400 mt-1 block font-semibold">PoSA Consensus</span>
               </div>
-              <div className="glass-card p-5 rounded-2xl">
+              <div className="glass-card p-5 rounded-2xl border-white/10 hover:border-red-500/30">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Block Time</span>
                 <span className="text-2xl font-black text-white mt-1 block">~3 Seconds</span>
-                <span className="text-xs text-indigo-400 mt-1 block">Instant Finality</span>
+                <span className="text-xs text-red-400 mt-1 block font-semibold">Instant Finality</span>
               </div>
-              <div className="glass-card p-5 rounded-2xl">
+              <div className="glass-card p-5 rounded-2xl border-white/10 hover:border-red-500/30">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Native Coin</span>
                 <span className="text-2xl font-black text-white mt-1 block">MSTC</span>
-                <span className="text-xs text-cyan-400 mt-1 block">Gas & Settlement</span>
+                <span className="text-xs text-red-400 mt-1 block font-semibold">Gas & Settlement</span>
               </div>
-              <div className="glass-card p-5 rounded-2xl">
+              <div className="glass-card p-5 rounded-2xl border-white/10 hover:border-red-500/30">
                 <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Architecture</span>
                 <span className="text-2xl font-black text-white mt-1 block">EVM L1</span>
-                <span className="text-xs text-amber-400 mt-1 block">Solidity 0.8.24</span>
+                <span className="text-xs text-red-400 mt-1 block font-semibold">Solidity 0.8.24</span>
               </div>
             </div>
           </section>
@@ -1370,13 +1406,13 @@ export default function Home() {
               <div className="flex space-x-2 text-xs">
                 <button
                   onClick={() => switchNetwork("testnet")}
-                  className="glass-pill px-4 py-2 rounded-xl text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/20 transition font-semibold"
+                  className="glass-pill px-4 py-2 rounded-xl text-red-300 border-red-500/40 hover:bg-red-500/20 transition font-semibold"
                 >
                   Add Testnet to MetaMask
                 </button>
                 <button
                   onClick={() => switchNetwork("mainnet")}
-                  className="glass-pill px-4 py-2 rounded-xl text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/20 transition font-semibold"
+                  className="glass-pill px-4 py-2 rounded-xl text-red-300 border-red-500/40 hover:bg-red-500/20 transition font-semibold"
                 >
                   Add Mainnet to MetaMask
                 </button>
@@ -1388,12 +1424,12 @@ export default function Home() {
               <div className="glass-card rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white text-base">MST Testnet</h3>
-                  <span className="glass-pill px-2.5 py-0.5 rounded text-emerald-400 font-mono">Chain ID: 4545</span>
+                  <span className="glass-pill px-2.5 py-0.5 rounded text-red-400 border border-red-500/20 font-mono">Chain ID: 4545</span>
                 </div>
                 <div className="space-y-2 text-slate-300">
                   <div className="flex justify-between py-1 border-b border-white/[0.06]">
                     <span className="text-slate-400">RPC Endpoint:</span>
-                    <span className="font-mono text-emerald-400">https://testnetrpc.mstblockchain.com</span>
+                    <span className="font-mono text-red-400">https://testnetrpc.mstblockchain.com</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/[0.06]">
                     <span className="text-slate-400">Currency Symbol:</span>
@@ -1413,12 +1449,12 @@ export default function Home() {
               <div className="glass-card rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white text-base">MST Mainnet</h3>
-                  <span className="glass-pill px-2.5 py-0.5 rounded text-emerald-400 font-mono">Chain ID: 4646 (0x1226)</span>
+                  <span className="glass-pill px-2.5 py-0.5 rounded text-red-400 border border-red-500/20 font-mono">Chain ID: 4646 (0x1226)</span>
                 </div>
                 <div className="space-y-2 text-slate-300">
                   <div className="flex justify-between py-1 border-b border-white/[0.06]">
                     <span className="text-slate-400">RPC Endpoint:</span>
-                    <span className="font-mono text-emerald-400">https://mariorpc.mstblockchain.com</span>
+                    <span className="font-mono text-red-400">https://mariorpc.mstblockchain.com</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/[0.06]">
                     <span className="text-slate-400">Currency Symbol:</span>
@@ -1437,7 +1473,7 @@ export default function Home() {
           </section>
 
           {/* Quick Launch Bottom Banner */}
-          <section className="glass-panel rounded-3xl p-8 text-center space-y-4 border-emerald-500/20 bg-gradient-to-br from-emerald-950/20 via-slate-900/60 to-cyan-950/20">
+          <section className="glass-panel rounded-3xl p-8 text-center space-y-4 border-red-500/25 bg-gradient-to-br from-[#9D1C1F]/25 via-[#0c0a0e]/95 to-[#28276B]/20">
             <h3 className="text-2xl font-extrabold text-white">Ready to interact with real on-chain assets?</h3>
             <p className="text-xs text-slate-300 max-w-xl mx-auto">
               Enter the dApp to issue verified academic credentials, manage cadastral real estate titles, or buy and retire certified carbon credits.
@@ -1445,7 +1481,7 @@ export default function Home() {
             <div className="pt-2">
               <button
                 onClick={() => setActiveTab("portfolio")}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                className="mst-btn-primary px-8 py-3 text-xs"
               >
                 Enter dApp Dashboard
               </button>
@@ -1453,19 +1489,34 @@ export default function Home() {
           </section>
 
           {/* Footer */}
-          <footer className="pt-12 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
-            <div className="flex items-center space-x-2">
-              <div className="h-6 w-6 rounded-lg bg-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-xs">M</div>
-              <span>MST Multi-Asset Hub • Built on MST Blockchain</span>
+          <footer className="pt-12 border-t border-red-500/15 flex flex-col md:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+            <div className="flex items-center space-x-2.5">
+              <div className="h-7 w-7 rounded-lg bg-gradient-to-tr from-[#9D1C1F] to-[#e52e2e] flex items-center justify-center font-black text-white text-xs shadow-md shadow-red-600/30">
+                MST
+              </div>
+              <span className="font-semibold text-slate-300">MST Multi-Asset Hub</span>
+              <span className="text-slate-500">• Powered by MST Blockchain & Masterstroke Technosoft</span>
             </div>
-            <div className="flex items-center space-x-6">
-              <a href="https://github.com/pranavpatil0666-ai/mst-multi-asset-management" target="_blank" rel="noreferrer" className="hover:text-slate-300 transition flex items-center space-x-1">
-                <Code2 className="h-3.5 w-3.5" />
-                <span>GitHub Repository</span>
+            <div className="flex flex-wrap items-center gap-5">
+              <a href="https://mstblockchain.com" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1">
+                <Globe className="h-3.5 w-3.5 text-red-400" />
+                <span>mstblockchain.com</span>
               </a>
-              <a href="https://mstblockchain.com" target="_blank" rel="noreferrer" className="hover:text-slate-300 transition flex items-center space-x-1">
-                <Globe className="h-3.5 w-3.5" />
-                <span>MST Blockchain Platform</span>
+              <a href="https://mstscan.com" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1">
+                <ExternalLink className="h-3.5 w-3.5 text-red-400" />
+                <span>mstscan.com</span>
+              </a>
+              <a href="https://masterstroke.academy" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1">
+                <BookOpen className="h-3.5 w-3.5 text-red-400" />
+                <span>MasterStroke Academy</span>
+              </a>
+              <a href="https://proofeasy.io" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-red-400" />
+                <span>ProofEasy.io</span>
+              </a>
+              <a href="https://github.com/pranavpatil0666-ai/mst-multi-asset-management" target="_blank" rel="noreferrer" className="hover:text-white transition flex items-center space-x-1">
+                <Code2 className="h-3.5 w-3.5 text-red-400" />
+                <span>GitHub</span>
               </a>
             </div>
           </footer>
@@ -1479,7 +1530,7 @@ export default function Home() {
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-10">
           {!account ? (
             <div className="glass-card rounded-2xl p-12 text-center max-w-xl mx-auto space-y-4">
-              <div className="h-16 w-16 mx-auto rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <div className="h-16 w-16 mx-auto rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center text-red-500">
                 <Wallet className="h-8 w-8" />
               </div>
               <h2 className="text-xl font-bold text-white">Connect Wallet to Read On-Chain Assets</h2>
@@ -1488,7 +1539,7 @@ export default function Home() {
               </p>
               <button
                 onClick={connectWallet}
-                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+                className="mst-btn-primary px-6 py-3 text-xs"
               >
                 Connect Wallet Now
               </button>
@@ -1527,9 +1578,9 @@ export default function Home() {
                 <div className="glass-card rounded-2xl p-6">
                   <div className="flex justify-between items-start">
                     <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">MSTC Gas Balance</span>
-                    <Wallet className="h-5 w-5 text-emerald-400" />
+                    <Wallet className="h-5 w-5 text-red-500" />
                   </div>
-                  <h2 className="text-3xl font-extrabold text-emerald-400 mt-3">{parseFloat(balance).toFixed(3)}</h2>
+                  <h2 className="text-3xl font-extrabold text-[#ff3b3b] mt-3">{parseFloat(balance).toFixed(3)}</h2>
                   <p className="text-xs text-slate-400 mt-2">MST Native Coin</p>
                 </div>
               </div>
@@ -1956,7 +2007,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={txLoading}
-                  className="w-full mt-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  className="w-full mt-2 mst-btn-primary py-3 text-xs shadow-md shadow-red-600/30 disabled:opacity-50"
                 >
                   {txLoading ? "Broadcasting to MST..." : "Broadcast Mint Batch Transaction"}
                 </button>
@@ -2048,7 +2099,7 @@ export default function Home() {
             </div>
 
             <div className="glass-pill text-xs px-4 py-2 rounded-xl text-slate-300">
-              Protocol Fee: <span className="text-emerald-400 font-bold">1.0%</span> | Settlement: <span className="text-emerald-400 font-bold">MSTC</span>
+              Protocol Fee: <span className="text-red-400 font-bold">1.0%</span> | Settlement: <span className="text-[#ff3b3b] font-bold">MSTC</span>
             </div>
           </div>
 
@@ -2107,7 +2158,7 @@ export default function Home() {
                 <button
                   type="submit"
                   disabled={txLoading}
-                  className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl transition shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  className="mst-btn-primary px-6 py-2.5 text-xs shadow-md shadow-red-600/30 disabled:opacity-50"
                 >
                   {txLoading ? "Broadcasting..." : "Create On-Chain Listing"}
                 </button>
@@ -2146,7 +2197,7 @@ export default function Home() {
                     <div className="mt-8 pt-4 border-t border-white/[0.08] flex items-center justify-between">
                       <div>
                         <span className="text-xs text-slate-400 block">Unit Price:</span>
-                        <p className="text-2xl font-black text-emerald-400 mt-0.5">
+                        <p className="text-2xl font-black text-[#ff3b3b] mt-0.5">
                           {listing.priceMSTC} <span className="text-xs font-normal text-slate-400">MSTC</span>
                         </p>
                       </div>
@@ -2154,7 +2205,7 @@ export default function Home() {
                       <button
                         onClick={() => handleRealBuyItem(listing)}
                         disabled={txLoading}
-                        className="bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-extrabold px-6 py-2.5 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20 active:scale-95 disabled:opacity-50"
+                        className="mst-btn-primary px-6 py-2.5 text-xs shadow-md shadow-red-600/30 active:scale-95 disabled:opacity-50"
                       >
                         {txLoading ? "Processing..." : "Buy with MSTC"}
                       </button>

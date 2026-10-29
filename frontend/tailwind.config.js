@@ -8,14 +8,17 @@ module.exports = {
     extend: {
       colors: {
         mst: {
-          50: "#f0fdf4",
-          100: "#dcfce7",
-          500: "#22c55e",
-          600: "#16a34a",
-          700: "#15803d",
-          800: "#166534",
-          900: "#14532d",
+          red: "#e52e2e",
+          deep: "#9D1C1F",
+          flame: "#ff2d2d",
+          dark: "#730000",
+          blue: "#28276B",
+          black: "#08080c",
+          charcoal: "#120d12",
         },
+      },
+      fontFamily: {
+        sans: ["'Space Grotesk'", "'Montserrat'", "-apple-system", "BlinkMacSystemFont", "sans-serif"],
       },
     },
   },

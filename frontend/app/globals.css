@@ -3,52 +3,63 @@
 @tailwind utilities;
 
 :root {
-  --background: #060913;
+  --background: #08080c;
   --foreground: #f8fafc;
+  --mst-red: #e52e2e;
+  --mst-deep-red: #9D1C1F;
+  --mst-dark-red: #730000;
+  --mst-flame: #ff2d2d;
+  --mst-blue: #28276B;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Space Grotesk', 'Montserrat', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
 
-/* Glassmorphism Design System */
+/* Official MST Blockchain Glassmorphism Design System */
 .glass-panel {
-  background: rgba(13, 19, 36, 0.55);
+  background: rgba(14, 12, 18, 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(229, 46, 46, 0.16);
+  box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.6), 0 0 30px 0 rgba(229, 46, 46, 0.05);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.025);
+  background: rgba(20, 16, 22, 0.55);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.4);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(28, 18, 24, 0.75);
+  border-color: rgba(229, 46, 46, 0.4);
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px 0 rgba(0, 0, 0, 0.4), 0 0 20px 0 rgba(16, 185, 129, 0.08);
+  box-shadow: 0 16px 36px 0 rgba(0, 0, 0, 0.5), 0 0 25px 0 rgba(229, 46, 46, 0.18);
 }
 
 .glass-pill {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.glass-pill:hover {
+  border-color: rgba(229, 46, 46, 0.35);
+  background: rgba(229, 46, 46, 0.08);
 }
 
 .glass-input {
-  background: rgba(9, 14, 28, 0.65);
+  background: rgba(14, 10, 15, 0.8);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -56,23 +67,41 @@ body {
 }
 
 .glass-input:focus {
-  border-color: rgba(52, 211, 153, 0.5);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  border-color: rgba(229, 46, 46, 0.65);
+  box-shadow: 0 0 0 3px rgba(229, 46, 46, 0.2);
   outline: none;
 }
 
-/* Subtle Shimmer for High-Priority Glass Elements */
+/* Official MST Red CTA Button */
+.mst-btn-primary {
+  background: linear-gradient(135deg, #e52e2e 0%, #ff3b3b 50%, #b91c1c 100%);
+  color: #ffffff;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 0.75rem;
+  box-shadow: 0 8px 24px -4px rgba(229, 46, 46, 0.45);
+  transition: all 0.2s ease;
+}
+
+.mst-btn-primary:hover {
+  background: linear-gradient(135deg, #ff3b3b 0%, #e52e2e 50%, #991b1b 100%);
+  box-shadow: 0 12px 28px -2px rgba(229, 46, 46, 0.6);
+  transform: translateY(-1px);
+}
+
+/* Ambient MST Red Orbs */
 @keyframes shimmer {
-  0% { opacity: 0.3; }
-  50% { opacity: 0.7; }
-  100% { opacity: 0.3; }
+  0% { opacity: 0.35; transform: scale(1); }
+  50% { opacity: 0.75; transform: scale(1.04); }
+  100% { opacity: 0.35; transform: scale(1); }
 }
 
 .ambient-orb {
   position: absolute;
   border-radius: 9999px;
-  filter: blur(120px);
+  filter: blur(140px);
   pointer-events: none;
   z-index: 0;
-  animation: shimmer 8s ease-in-out infinite;
+  animation: shimmer 10s ease-in-out infinite;
 }
