@@ -4,6 +4,7 @@
   "description": "Universal Multi-Asset Management Interface on MST Blockchain",
   "scripts": {
     "dev": "next dev",
+    "dev:turbo": "next dev --turbopack",
     "build": "next build",
     "start": "next start"
   },
