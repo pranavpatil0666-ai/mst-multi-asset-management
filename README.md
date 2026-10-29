@@ -52,6 +52,24 @@ The MST Multi-Asset Management System is structured into four decoupled, interop
 
 ---
 
+## 🛠️ Technical Stack
+
+| Layer | Technology / Tool | Description & Implementation |
+| :--- | :--- | :--- |
+| **Layer 1 Blockchain** | **MST Blockchain (EVM L1)** | High-performance PoSA consensus with 4,000+ TPS and ~3-second deterministic finality. |
+| **Smart Contracts** | **Solidity `^0.8.24` (Cancun)** | Optimized with `viaIR: true` and 200 optimization runs for minimal gas execution. |
+| **Development Suite** | **Hardhat 2.22** | Unit test suite (13 tests), mock in-memory EVM, and multi-network deployment scripts. |
+| **Standard Libraries** | **OpenZeppelin Contracts v5.0** | ERC-5192 (Soulbound), ERC-1155 (Multi-Token), ERC-721 (Property Deed), `AccessControlEnumerable`. |
+| **Decentralized Storage** | **Pinata IPFS Cloud** | Enterprise IPFS pinning with dedicated gateways for transcripts, GIS deed surveys, and audit logs. |
+| **Web3 Client Library** | **Ethers.js v6** | BrowserProvider wallet connectivity, BigInt math, transaction broadcasting, and contract interfaces. |
+| **Frontend Framework** | **Next.js 15 (App Router)** | High-speed React 19 architecture with SSR-safe client components and optimized asset pipelines. |
+| **Design System** | **Tailwind CSS v3.4** | Custom MST Blockchain obsidian-glass palette (`#9D1C1F`, `#e52e2e`, `#08080c`, `#28276B`). |
+| **Graphics & VFX** | **HTML5 Canvas API** | Custom GPU-accelerated interactive blockchain network node topology with real-time mouse repulsion. |
+| **Typography & UI** | **Google Fonts & Lucide React** | Space Grotesk & Montserrat display fonts with crisp vector iconography. |
+| **Cloud Hosting** | **Vercel Production Edge** | Serverless production deployment with instant global CDN distribution. |
+
+---
+
 ## 🏛️ Smart Contract Architecture
 
 ```
