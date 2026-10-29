@@ -1,7 +1,7 @@
 # Universal Multi-Asset Management System on MST Blockchain
 
 [![CI/CD Pipeline](https://github.com/pranavpatil0666-ai/mst-multi-asset-management/actions/workflows/ci.yml/badge.svg)](https://github.com/pranavpatil0666-ai/mst-multi-asset-management/actions/workflows/ci.yml)
-[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-success?logo=vercel&color=000000)](https://frontend-snowy-ten-19.vercel.app)
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-mst--multi--asset--hub-success?logo=vercel&color=000000)](https://mst-multi-asset-hub.vercel.app)
 [![Solidity](https://img.shields.io/badge/Solidity-0.8.24-363636?logo=solidity)](https://soliditylang.org/)
 [![Network](https://img.shields.io/badge/MST%20Blockchain-EVM%20L1-e52e2e)](https://mstblockchain.com)
 
@@ -298,4 +298,4 @@ The repository integrates an automated enterprise GitHub Actions pipeline (`.git
 1. **Smart Contracts CI**: Installs root dependencies, compiles Solidity 0.8.24 Cancun contracts with optimizer via IR, and runs all 14 unit tests covering RBAC, Soulbound restrictions, retirement burning, and marketplace trades.
 2. **Frontend CI**: Checks out code, configures Node 20 with npm caching, and builds the production Next.js 15 bundle with zero compilation errors.
 3. **Security Audit**: Scans dependencies for known CVEs and high-severity security vulnerabilities.
-4. **Vercel Continuous Deployment**: Automatically pushes production builds to the live edge URL upon merging to `master`.
+4. **Vercel Continuous Deployment**: Automatically pushes production builds to [mst-multi-asset-hub.vercel.app](https://mst-multi-asset-hub.vercel.app) upon merging to `master`.
