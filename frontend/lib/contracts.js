@@ -75,6 +75,7 @@ export const LAND_TITLE_ABI = [
   "function getEncumbranceReason(uint256 tokenId) external view returns (string)",
   "function getOwnerParcels(address owner) external view returns (uint256[])",
   "function approve(address to, uint256 tokenId) external",
+  "function tokenURI(uint256 tokenId) external view returns (string)",
   "function ownerOf(uint256 tokenId) external view returns (address)",
   "function balanceOf(address owner) external view returns (uint256)"
 ];

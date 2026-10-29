@@ -43,6 +43,8 @@ import {
   ASSET_MANAGER_ABI,
   MARKETPLACE_ABI,
 } from "../lib/contracts";
+import IPFSUploader from "../components/IPFSUploader";
+import { getIPFSGatewayUrl, formatIPFSDisplay } from "../lib/ipfs";
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState("landing"); // 'landing' | 'portfolio' | 'institution' | 'marketplace'
@@ -178,6 +180,7 @@ export default function Home() {
               if (parcel.isEncumbered) {
                 encReason = await landContract.getEncumbranceReason(id);
               }
+              const deedDocUri = await landContract.tokenURI(id).catch(() => "");
               fetchedLand.push({
                 tokenId: Number(id),
                 parcelIdentifier: parcel.parcelIdentifier,
@@ -187,6 +190,7 @@ export default function Home() {
                 legalRegistrar: parcel.legalRegistrar,
                 isEncumbered: parcel.isEncumbered,
                 encumbranceReason: encReason,
+                deedDocUri,
                 registeredAt: new Date(Number(parcel.registeredAt) * 1000).toLocaleDateString(),
               });
             }
@@ -1118,7 +1122,17 @@ export default function Home() {
                             <CheckCircle2 className="h-3.5 w-3.5" />
                             <span>{deg.isRevoked ? "Revoked by University" : "Verified on MST Chain"}</span>
                           </span>
-                          <span className="text-slate-400 font-mono text-[11px] truncate max-w-[150px]">{deg.transcriptUri}</span>
+                          {deg.transcriptUri && (
+                            <a
+                              href={getIPFSGatewayUrl(deg.transcriptUri)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-cyan-400 hover:text-white flex items-center space-x-1 text-[11px] transition font-medium"
+                            >
+                              <span>View IPFS Transcript</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -1182,6 +1196,21 @@ export default function Home() {
                           <div className="mt-3 p-2.5 rounded-xl bg-rose-950/30 border border-rose-900/50 text-[11px] text-rose-300 flex items-center space-x-2">
                             <AlertTriangle className="h-4 w-4 shrink-0 text-rose-400" />
                             <span>{parcel.encumbranceReason || "Lien active on title"}</span>
+                          </div>
+                        )}
+
+                        {parcel.deedDocUri && (
+                          <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                            <span className="text-slate-400 text-[11px]">IPFS Cadastral Record:</span>
+                            <a
+                              href={getIPFSGatewayUrl(parcel.deedDocUri)}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-cyan-400 hover:text-white flex items-center space-x-1 text-[11px] transition font-medium"
+                            >
+                              <span>View Deed on IPFS</span>
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
                           </div>
                         )}
                       </div>
@@ -1307,6 +1336,14 @@ export default function Home() {
                   </div>
                 </div>
 
+                <IPFSUploader
+                  label="Student Diploma & Transcript Document"
+                  assetType="CREDENTIAL"
+                  value={degreeForm.transcriptIpfsUri}
+                  onChange={(uri) => setDegreeForm({ ...degreeForm, transcriptIpfsUri: uri })}
+                  accept=".pdf,.png,.jpg,.jpeg,.json"
+                />
+
                 <button
                   type="submit"
                   disabled={txLoading}
@@ -1382,6 +1419,14 @@ export default function Home() {
                   </div>
                 </div>
 
+                <IPFSUploader
+                  label="Official Deed Registry Document & Cadastral Survey (PDF)"
+                  assetType="LAND_DEED"
+                  value={landForm.deedDocumentIpfsUri}
+                  onChange={(uri) => setLandForm({ ...landForm, deedDocumentIpfsUri: uri })}
+                  accept=".pdf,.png,.jpg,.jpeg,.json"
+                />
+
                 <button
                   type="submit"
                   disabled={txLoading}
@@ -1444,6 +1489,14 @@ export default function Home() {
                     />
                   </div>
                 </div>
+
+                <IPFSUploader
+                  label="Third-Party Verification Audit Report (PDF)"
+                  assetType="CARBON_AUDIT"
+                  value={carbonForm.auditReportIpfsUri}
+                  onChange={(uri) => setCarbonForm({ ...carbonForm, auditReportIpfsUri: uri })}
+                  accept=".pdf,.png,.jpg,.jpeg,.json"
+                />
 
                 <button
                   type="submit"
