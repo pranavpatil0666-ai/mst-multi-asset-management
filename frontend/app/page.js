@@ -833,14 +833,14 @@ export default function Home() {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="font-extrabold text-base tracking-tight text-white uppercase font-sans">
+                <span className="font-black text-base tracking-tight text-white uppercase font-sans">
                   MST <span className="text-[#e52e2e]">BLOCKCHAIN</span>
-                </h1>
+                </span>
                 <span className="text-[10px] font-bold tracking-wider bg-red-500/15 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full uppercase">
-                  RWA L1
+                  Asset Hub
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Multi-Asset & Credential Infrastructure</p>
+              <p className="text-[11px] text-slate-400 font-medium">Universal Multi-Asset Platform</p>
             </div>
           </button>
 
@@ -1164,21 +1164,29 @@ export default function Home() {
       {activeTab === "landing" && (
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-20">
           {/* Hero Section */}
-          <section className="text-center max-w-4xl mx-auto space-y-6 pt-6">
-            <div className="inline-flex items-center space-x-2 glass-pill px-4 py-1.5 rounded-full text-xs font-semibold text-red-400 border border-red-500/30 shadow-lg shadow-red-600/10">
-              <Sparkles className="h-3.5 w-3.5 text-red-500" />
-              <span>Bridging Traditional Systems and Decentralized Technology</span>
+          <section className="text-center max-w-5xl mx-auto space-y-6 pt-6">
+            {/* Live Ecosystem Pill */}
+            <div className="inline-flex items-center space-x-2.5 glass-pill px-4 py-1.5 rounded-full text-xs font-medium text-slate-200 border border-red-500/30 shadow-lg shadow-red-600/10">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[#e52e2e]"></span>
+              </span>
+              <span className="text-[#ff3b3b] font-bold uppercase tracking-wider text-[11px]">MST Blockchain</span>
+              <span className="text-slate-600">•</span>
+              <span className="text-slate-300 font-medium">Enterprise EVM Layer 1 Infrastructure</span>
             </div>
 
-            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.12] uppercase font-sans">
-              Universal Multi-Asset <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3b3b] via-[#e52e2e] to-white">
-                Infrastructure
+            {/* Main Hero Heading */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.12] font-sans">
+              Universal Multi-Asset <br className="hidden sm:inline" />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#ff3b3b] via-[#e52e2e] to-slate-100">
+                Management System
               </span>
             </h1>
 
-            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto font-normal">
-              An institutional framework uniting <strong>Soulbound Academic Degrees</strong>, <strong>Certified Carbon Credits</strong>, and <strong>Cadastral Land Titles</strong> on the high-throughput <strong>MST Blockchain (EVM L1)</strong>.
+            {/* Subtitle */}
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-3xl mx-auto font-normal">
+              An enterprise-grade decentralized platform uniting <strong className="text-white font-semibold">Soulbound Academic Credentials</strong>, <strong className="text-white font-semibold">Certified Carbon Offsets</strong>, and <strong className="text-white font-semibold">Cadastral Land Titles</strong> with native marketplace liquidity on the high-throughput <strong className="text-white font-semibold">MST Blockchain (EVM L1)</strong>.
             </p>
 
             {/* Hero CTAs */}
@@ -1528,6 +1536,26 @@ export default function Home() {
             </div>
           ) : (
             <>
+              {/* Portfolio Top Header Banner */}
+              <div className="glass-panel rounded-2xl p-6 border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                  <div className="flex items-center space-x-2 text-xs text-red-400 font-semibold uppercase tracking-wider mb-1">
+                    <Sparkles className="h-3.5 w-3.5 text-red-500" />
+                    <span>Decentralized Asset Aggregator</span>
+                  </div>
+                  <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                    My On-Chain Portfolio
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Real-time verification of degrees, land titles, carbon credits, and MSTC balance directly from MST Blockchain.
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2 glass-pill px-3.5 py-2 rounded-xl text-xs font-mono text-slate-300">
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span>MST Blockchain Synced</span>
+                </div>
+              </div>
+
               {/* Overview Stat Counters */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="glass-card rounded-2xl p-6">
@@ -1749,14 +1777,22 @@ export default function Home() {
       {/* ======================================================== */}
       {activeTab === "institution" && (
         <main className="relative z-10 max-w-5xl mx-auto px-6 py-8 space-y-8">
-          <div className="glass-panel rounded-2xl p-6 border-white/10">
-            <h3 className="text-lg font-bold text-white flex items-center space-x-2.5">
-              <Building2 className="h-5 w-5 text-emerald-400" />
-              <span>Real On-Chain Institutional Issuance Portal</span>
-            </h3>
-            <p className="text-xs text-slate-400 mt-1">
-              Every submission below broadcasts a real smart contract transaction to the MST Blockchain. Your wallet will prompt you to sign and pay gas in MSTC.
-            </p>
+          <div className="glass-panel rounded-2xl p-6 border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <div className="flex items-center space-x-2 text-xs text-red-400 font-semibold uppercase tracking-wider mb-1">
+                <Building2 className="h-3.5 w-3.5 text-red-500" />
+                <span>Authorized Authorities • Cryptographic Minting</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                Institutional Issuance Portal
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Decentralized minting and lifecycle governance for verified academic degrees, certified carbon batches, and cadastral land deeds.
+              </p>
+            </div>
+            <div className="glass-pill px-3.5 py-2 rounded-xl text-xs text-slate-300">
+              Consensus: <span className="text-red-400 font-bold">PoSA • EVM L1</span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -2071,17 +2107,20 @@ export default function Home() {
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-6">
           <div className="glass-panel rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-white/10">
             <div>
-              <h3 className="text-lg font-bold text-white flex items-center space-x-2.5">
-                <Store className="h-5 w-5 text-cyan-400" />
-                <span>MSTC RWA Marketplace (Real Escrow)</span>
-              </h3>
+              <div className="flex items-center space-x-2 text-xs text-red-400 font-semibold uppercase tracking-wider mb-1">
+                <Store className="h-3.5 w-3.5 text-red-500" />
+                <span>Decentralized Escrow & Liquidity</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                Universal Asset Marketplace
+              </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Reads active listings directly from UniversalMarketplace.sol. Purchases are executed with native MSTC via contract escrow.
+                Decentralized peer-to-peer exchange and non-custodial escrow for transferable real-world assets settled in native MSTC.
               </p>
             </div>
 
             <div className="glass-pill text-xs px-4 py-2 rounded-xl text-slate-300">
-              Protocol Fee: <span className="text-red-400 font-bold">1.0%</span> | Settlement: <span className="text-[#ff3b3b] font-bold">MSTC</span>
+              Protocol Fee: <span className="text-red-400 font-bold">1.0%</span> | Settlement: <span className="text-[#ff3b3b] font-bold">MSTC Coin</span>
             </div>
           </div>
 
