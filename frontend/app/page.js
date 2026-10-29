@@ -34,6 +34,11 @@ import {
   UploadCloud,
   Cloud,
   Key,
+  Crown,
+  User,
+  UserCheck,
+  Shield,
+  ShieldAlert,
 } from "lucide-react";
 import {
   MST_NETWORKS,
@@ -177,6 +182,23 @@ export default function Home() {
     priceInMSTC: "",
   });
 
+  // Role-Based Access Control (RBAC) States
+  const [userRoles, setUserRoles] = useState({
+    isAdmin: false,
+    isUniversity: false,
+    isCarbonAuditor: false,
+    isLandRegistrar: false,
+  });
+  const [authoritiesList, setAuthoritiesList] = useState([]);
+  const [authorityForm, setAuthorityForm] = useState({
+    address: "",
+    role: "UNIVERSITY_ROLE", // "UNIVERSITY_ROLE" | "CARBON_AUDITOR_ROLE" | "LAND_REGISTRAR_ROLE" | "DEFAULT_ADMIN_ROLE"
+    name: "",
+    jurisdiction: "",
+    officialWebsite: "",
+    registrationId: "",
+  });
+
   // Helper to get BrowserProvider and Signer
   const getProviderAndSigner = useCallback(async () => {
     if (typeof window === "undefined" || !window.ethereum) {
@@ -197,6 +219,64 @@ export default function Home() {
 
       const bal = await provider.getBalance(currentAccount);
       setBalance(formatEther(bal));
+
+      // 0. Fetch User Roles & Registered Authorities (RBAC)
+      try {
+        const authorityContract = new Contract(addresses.AuthorityRegistry, AUTHORITY_REGISTRY_ABI, provider);
+        const adminRole = "0x0000000000000000000000000000000000000000000000000000000000000000";
+        const [univRole, auditorRole, registrarRole] = await Promise.all([
+          authorityContract.UNIVERSITY_ROLE().catch(() => null),
+          authorityContract.CARBON_AUDITOR_ROLE().catch(() => null),
+          authorityContract.LAND_REGISTRAR_ROLE().catch(() => null),
+        ]);
+
+        const [isAdmin, isUniv, isAuditor, isRegistrar] = await Promise.all([
+          authorityContract.hasRole(adminRole, currentAccount).catch(() => false),
+          univRole ? authorityContract.isAuthorized(currentAccount, univRole).catch(() => false) : false,
+          auditorRole ? authorityContract.isAuthorized(currentAccount, auditorRole).catch(() => false) : false,
+          registrarRole ? authorityContract.isAuthorized(currentAccount, registrarRole).catch(() => false) : false,
+        ]);
+
+        setUserRoles({
+          isAdmin,
+          isUniversity: isUniv,
+          isCarbonAuditor: isAuditor,
+          isLandRegistrar: isRegistrar,
+        });
+
+        // Load all registered institutional authorities
+        try {
+          const authAddresses = await authorityContract.getAllAuthorities().catch(() => []);
+          const list = [];
+          for (const addr of authAddresses) {
+            try {
+              const profile = await authorityContract.getAuthorityProfile(addr);
+              let roleTitle = "Authority";
+              if (univRole && await authorityContract.hasRole(univRole, addr).catch(() => false)) roleTitle = "University Authority";
+              else if (auditorRole && await authorityContract.hasRole(auditorRole, addr).catch(() => false)) roleTitle = "Carbon Auditor";
+              else if (registrarRole && await authorityContract.hasRole(registrarRole, addr).catch(() => false)) roleTitle = "Land Registrar";
+
+              list.push({
+                address: addr,
+                name: profile.name,
+                jurisdiction: profile.jurisdiction,
+                officialWebsite: profile.officialWebsite,
+                registrationId: profile.registrationId,
+                isActive: profile.isActive,
+                registeredAt: new Date(Number(profile.registeredAt) * 1000).toLocaleDateString(),
+                roleTitle,
+              });
+            } catch (e) {
+              console.error(`Error loading profile for ${addr}:`, e);
+            }
+          }
+          setAuthoritiesList(list);
+        } catch (e) {
+          console.warn("Could not load all authorities:", e);
+        }
+      } catch (err) {
+        console.warn("Authority/Role fetch error:", err);
+      }
 
       // 1. Fetch Degrees
       try {
@@ -584,6 +664,120 @@ export default function Home() {
     }
   }
 
+  // Real On-Chain Action: Register Authority (Admin Only)
+  async function handleRegisterAuthority(e) {
+    e.preventDefault();
+    try {
+      setTxLoading(true);
+      setStatusMsg("Submitting Authority Registration to MST Blockchain...");
+      const { provider, signer } = await getProviderAndSigner();
+      const { Contract } = await import("ethers");
+
+      const authorityContract = new Contract(addresses.AuthorityRegistry, AUTHORITY_REGISTRY_ABI, signer);
+
+      let roleBytes;
+      if (authorityForm.role === "UNIVERSITY_ROLE") {
+        roleBytes = await authorityContract.UNIVERSITY_ROLE();
+      } else if (authorityForm.role === "CARBON_AUDITOR_ROLE") {
+        roleBytes = await authorityContract.CARBON_AUDITOR_ROLE();
+      } else if (authorityForm.role === "LAND_REGISTRAR_ROLE") {
+        roleBytes = await authorityContract.LAND_REGISTRAR_ROLE();
+      } else {
+        roleBytes = "0x0000000000000000000000000000000000000000000000000000000000000000";
+      }
+
+      const tx = await authorityContract.registerAuthority(
+        authorityForm.address.trim(),
+        roleBytes,
+        authorityForm.name.trim(),
+        authorityForm.jurisdiction.trim(),
+        authorityForm.officialWebsite.trim() || "https://mstblockchain.com",
+        authorityForm.registrationId.trim()
+      );
+      setStatusMsg("Mining authority registration: " + tx.hash.slice(0, 14) + "...");
+      await tx.wait();
+
+      setStatusMsg("Successfully registered institutional authority on MST Chain!");
+      setAuthorityForm({
+        address: "",
+        role: "UNIVERSITY_ROLE",
+        name: "",
+        jurisdiction: "",
+        officialWebsite: "",
+        registrationId: "",
+      });
+      await fetchOnChainData(account, provider);
+    } catch (err) {
+      console.error(err);
+      setStatusMsg("Registration Failed: " + (err.reason || err.message));
+    } finally {
+      setTxLoading(false);
+    }
+  }
+
+  // Real On-Chain Action: Toggle Authority Status (Admin Only)
+  async function handleToggleAuthorityStatus(authorityAddr, currentActive) {
+    try {
+      setTxLoading(true);
+      setStatusMsg(`${currentActive ? "Deactivating" : "Activating"} authority ${authorityAddr.slice(0, 8)}...`);
+      const { provider, signer } = await getProviderAndSigner();
+      const { Contract } = await import("ethers");
+
+      const authorityContract = new Contract(addresses.AuthorityRegistry, AUTHORITY_REGISTRY_ABI, signer);
+      const tx = await authorityContract.setAuthorityStatus(authorityAddr, !currentActive);
+      await tx.wait();
+
+      setStatusMsg(`Authority status updated to ${!currentActive ? "Active" : "Inactive"}!`);
+      await fetchOnChainData(account, provider);
+    } catch (err) {
+      console.error(err);
+      setStatusMsg("Status update failed: " + (err.reason || err.message));
+    } finally {
+      setTxLoading(false);
+    }
+  }
+
+  // Pre-fill quick demo self-registration
+  function handleQuickAssignSelf(roleName) {
+    if (!account) return;
+    setAuthorityForm({
+      address: account,
+      role: roleName,
+      name: roleName === "UNIVERSITY_ROLE" ? "MST Technological University" : roleName === "CARBON_AUDITOR_ROLE" ? "Global EcoVerifier Labs" : "Department of Land Cadastre",
+      jurisdiction: "Singapore / Global",
+      officialWebsite: "https://mstblockchain.com",
+      registrationId: `MST-AUTH-${Date.now().toString().slice(-4)}`,
+    });
+    setStatusMsg(`Pre-filled registration form for your connected address.`);
+  }
+
+  // Real On-Chain Action: Set Land Encumbrance / Lien (Registrar Only)
+  async function handleRealSetEncumbrance(e) {
+    e.preventDefault();
+    try {
+      setTxLoading(true);
+      const { provider, signer } = await getProviderAndSigner();
+      const { Contract } = await import("ethers");
+
+      const landContract = new Contract(addresses.LandOwnershipTitle, LAND_TITLE_ABI, signer);
+      setStatusMsg("Updating land parcel encumbrance lien status... Confirm in wallet.");
+      const tx = await landContract.setEncumbrance(
+        Number(encumbranceForm.tokenId),
+        encumbranceForm.isEncumbered,
+        encumbranceForm.reason || "Lien active on cadastral title"
+      );
+      await tx.wait();
+
+      setStatusMsg("Cadastral Encumbrance updated successfully!");
+      setEncumbranceForm({ tokenId: "", isEncumbered: true, reason: "" });
+      await fetchOnChainData(account, provider);
+    } catch (err) {
+      setStatusMsg("Encumbrance Update Failed: " + (err.reason || err.message));
+    } finally {
+      setTxLoading(false);
+    }
+  }
+
   // Auto-connect and load if provider is available
   useEffect(() => {
     if (typeof window !== "undefined" && window.ethereum) {
@@ -668,6 +862,14 @@ export default function Home() {
             >
               Marketplace
             </button>
+            <button
+              onClick={() => setActiveTab("admin")}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                activeTab === "admin" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Roles & Admin
+            </button>
           </nav>
 
           {/* Network Switcher & Wallet */}
@@ -716,10 +918,55 @@ export default function Home() {
             </button>
 
             {account ? (
-              <div className="flex items-center space-x-2 glass-pill rounded-xl px-3.5 py-2 text-xs">
-                <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400"></div>
-                <span className="font-mono text-slate-300">{account.slice(0, 6)}...{account.slice(-4)}</span>
-                <span className="text-emerald-400 font-bold">({parseFloat(balance).toFixed(2)} MSTC)</span>
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 glass-pill rounded-xl px-3.5 py-2 text-xs">
+                  <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400"></div>
+                  <span className="font-mono text-slate-300">{account.slice(0, 6)}...{account.slice(-4)}</span>
+                  <span className="text-emerald-400 font-bold">({parseFloat(balance).toFixed(2)} MSTC)</span>
+                </div>
+
+                <div
+                  onClick={() => setActiveTab("admin")}
+                  className={`hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer transition shadow-sm ${
+                    userRoles.isAdmin
+                      ? "bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30"
+                      : userRoles.isUniversity
+                      ? "bg-indigo-500/20 text-indigo-300 border border-indigo-500/40 hover:bg-indigo-500/30"
+                      : userRoles.isCarbonAuditor
+                      ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 hover:bg-emerald-500/30"
+                      : userRoles.isLandRegistrar
+                      ? "bg-sky-500/20 text-sky-300 border border-sky-500/40 hover:bg-sky-500/30"
+                      : "bg-white/[0.05] text-slate-400 border border-white/10 hover:text-slate-200"
+                  }`}
+                  title="Your Active Protocol Role (Click to manage)"
+                >
+                  {userRoles.isAdmin ? (
+                    <>
+                      <Crown className="h-3.5 w-3.5 text-purple-400" />
+                      <span>Admin</span>
+                    </>
+                  ) : userRoles.isUniversity ? (
+                    <>
+                      <GraduationCap className="h-3.5 w-3.5 text-indigo-400" />
+                      <span>University</span>
+                    </>
+                  ) : userRoles.isCarbonAuditor ? (
+                    <>
+                      <Trees className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Auditor</span>
+                    </>
+                  ) : userRoles.isLandRegistrar ? (
+                    <>
+                      <MapPin className="h-3.5 w-3.5 text-sky-400" />
+                      <span>Registrar</span>
+                    </>
+                  ) : (
+                    <>
+                      <User className="h-3.5 w-3.5 text-slate-400" />
+                      <span>User</span>
+                    </>
+                  )}
+                </div>
               </div>
             ) : (
               <button
@@ -1916,6 +2163,401 @@ export default function Home() {
                 ))}
               </div>
             )}
+          </div>
+        </main>
+      )}
+
+      {/* ======================================================== */}
+      {/* 👑 TAB 4: ROLES & ADMIN GOVERNANCE PORTAL */}
+      {/* ======================================================== */}
+      {activeTab === "admin" && (
+        <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-8">
+          {/* Header Banner */}
+          <div className="glass-panel rounded-3xl p-8 border-purple-500/20 bg-gradient-to-br from-purple-950/20 via-slate-900/60 to-slate-950 space-y-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-purple-400 uppercase tracking-widest flex items-center space-x-1.5">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Role-Based Access Control (RBAC) Governance</span>
+                </span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white mt-1">
+                  Institutional Authority & User Permissions
+                </h2>
+                <p className="text-xs md:text-sm text-slate-300 max-w-2xl mt-1">
+                  Enforces strict institutional privilege separation on MST Blockchain. Only accredited universities can issue degrees, certified eco-auditors can mint carbon batches, and municipal registrars can notarize cadastral deeds.
+                </p>
+              </div>
+
+              {/* Connected Wallet Privilege Pill */}
+              <div className="p-4 rounded-2xl glass-card border-white/10 shrink-0 text-right">
+                <span className="text-[10px] text-slate-400 block uppercase tracking-wider font-semibold">Your Wallet Privilege</span>
+                <div className="flex items-center space-x-2 mt-1 justify-end">
+                  {userRoles.isAdmin ? (
+                    <span className="text-sm font-black text-purple-300 flex items-center space-x-1.5">
+                      <Crown className="h-4 w-4 text-purple-400" />
+                      <span>Protocol Admin (Superuser)</span>
+                    </span>
+                  ) : userRoles.isUniversity ? (
+                    <span className="text-sm font-black text-indigo-300 flex items-center space-x-1.5">
+                      <GraduationCap className="h-4 w-4 text-indigo-400" />
+                      <span>Accredited University</span>
+                    </span>
+                  ) : userRoles.isCarbonAuditor ? (
+                    <span className="text-sm font-black text-emerald-300 flex items-center space-x-1.5">
+                      <Trees className="h-4 w-4 text-emerald-400" />
+                      <span>Certified Carbon Auditor</span>
+                    </span>
+                  ) : userRoles.isLandRegistrar ? (
+                    <span className="text-sm font-black text-sky-300 flex items-center space-x-1.5">
+                      <MapPin className="h-4 w-4 text-sky-400" />
+                      <span>Cadastral Land Registrar</span>
+                    </span>
+                  ) : (
+                    <span className="text-sm font-black text-slate-300 flex items-center space-x-1.5">
+                      <User className="h-4 w-4 text-slate-400" />
+                      <span>Citizen / Standard User</span>
+                    </span>
+                  )}
+                </div>
+                <span className="text-[10px] text-slate-500 font-mono mt-0.5 block">
+                  {account ? `${account.slice(0, 10)}...${account.slice(-6)}` : "No Wallet Connected"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* 4-Role Permission Matrix */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+            {/* Protocol Admin */}
+            <div className={`glass-card p-5 rounded-2xl space-y-3 border ${
+              userRoles.isAdmin ? "border-purple-500/50 bg-purple-950/15" : "border-white/10"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-xl bg-purple-500/20 text-purple-400">
+                  <Crown className="h-5 w-5" />
+                </div>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  userRoles.isAdmin ? "bg-purple-500/20 text-purple-300 border-purple-500/40" : "bg-white/[0.04] text-slate-500 border-white/10"
+                }`}>
+                  {userRoles.isAdmin ? "Active on You" : "Not Granted"}
+                </span>
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Protocol Admin</h4>
+                <p className="text-[11px] text-slate-400 mt-1">DEFAULT_ADMIN_ROLE</p>
+              </div>
+              <ul className="text-slate-300 space-y-1.5 text-[11px] pt-2 border-t border-white/[0.06]">
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-purple-400" /><span>Register new authorities</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-purple-400" /><span>Activate / Deactivate roles</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-purple-400" /><span>Set protocol parameters</span></li>
+              </ul>
+            </div>
+
+            {/* University */}
+            <div className={`glass-card p-5 rounded-2xl space-y-3 border ${
+              userRoles.isUniversity ? "border-indigo-500/50 bg-indigo-950/15" : "border-white/10"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-xl bg-indigo-500/20 text-indigo-400">
+                  <GraduationCap className="h-5 w-5" />
+                </div>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  userRoles.isUniversity ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40" : "bg-white/[0.04] text-slate-500 border-white/10"
+                }`}>
+                  {userRoles.isUniversity ? "Active on You" : "Not Granted"}
+                </span>
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">University Authority</h4>
+                <p className="text-[11px] text-slate-400 mt-1">UNIVERSITY_ROLE</p>
+              </div>
+              <ul className="text-slate-300 space-y-1.5 text-[11px] pt-2 border-t border-white/[0.06]">
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-indigo-400" /><span>Issue Soulbound degrees</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-indigo-400" /><span>Revoke fraudulent degrees</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-indigo-400" /><span>Upload IPFS transcript scans</span></li>
+              </ul>
+            </div>
+
+            {/* Carbon Auditor */}
+            <div className={`glass-card p-5 rounded-2xl space-y-3 border ${
+              userRoles.isCarbonAuditor ? "border-emerald-500/50 bg-emerald-950/15" : "border-white/10"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+                  <Trees className="h-5 w-5" />
+                </div>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  userRoles.isCarbonAuditor ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40" : "bg-white/[0.04] text-slate-500 border-white/10"
+                }`}>
+                  {userRoles.isCarbonAuditor ? "Active on You" : "Not Granted"}
+                </span>
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Carbon Auditor</h4>
+                <p className="text-[11px] text-slate-400 mt-1">CARBON_AUDITOR_ROLE</p>
+              </div>
+              <ul className="text-slate-300 space-y-1.5 text-[11px] pt-2 border-t border-white/[0.06]">
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-emerald-400" /><span>Mint batch credit batches</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-emerald-400" /><span>Attach third-party audit reports</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-emerald-400" /><span>Verify methodology & vintage</span></li>
+              </ul>
+            </div>
+
+            {/* Land Registrar */}
+            <div className={`glass-card p-5 rounded-2xl space-y-3 border ${
+              userRoles.isLandRegistrar ? "border-sky-500/50 bg-sky-950/15" : "border-white/10"
+            }`}>
+              <div className="flex items-center justify-between">
+                <div className="p-2 rounded-xl bg-sky-500/20 text-sky-400">
+                  <MapPin className="h-5 w-5" />
+                </div>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  userRoles.isLandRegistrar ? "bg-sky-500/20 text-sky-300 border-sky-500/40" : "bg-white/[0.04] text-slate-500 border-white/10"
+                }`}>
+                  {userRoles.isLandRegistrar ? "Active on You" : "Not Granted"}
+                </span>
+              </div>
+              <div>
+                <h4 className="font-bold text-white text-sm">Cadastral Registrar</h4>
+                <p className="text-[11px] text-slate-400 mt-1">LAND_REGISTRAR_ROLE</p>
+              </div>
+              <ul className="text-slate-300 space-y-1.5 text-[11px] pt-2 border-t border-white/[0.06]">
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-sky-400" /><span>Register cadastral property deeds</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-sky-400" /><span>Place & release mortgage liens</span></li>
+                <li className="flex items-center space-x-1.5"><Check className="h-3 w-3 text-sky-400" /><span>Lock transfers on encumbered land</span></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Form: Register Authority On-Chain */}
+            <div className="lg:col-span-1 glass-card rounded-2xl p-6 space-y-5">
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-white text-base flex items-center space-x-2">
+                  <UserCheck className="h-5 w-5 text-purple-400" />
+                  <span>Register Authority</span>
+                </h3>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded-full border ${
+                  userRoles.isAdmin ? "bg-purple-500/20 text-purple-300 border-purple-500/40" : "bg-amber-500/10 text-amber-300 border-amber-500/20"
+                }`}>
+                  {userRoles.isAdmin ? "Admin Access Ready" : "Admin Permission Required"}
+                </span>
+              </div>
+
+              {!userRoles.isAdmin && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-200 text-xs flex items-start space-x-2">
+                  <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400 mt-0.5" />
+                  <span>
+                    Only wallets holding <code>DEFAULT_ADMIN_ROLE</code> can submit this transaction on-chain. Standard users can test role pre-fill or view registered institutions.
+                  </span>
+                </div>
+              )}
+
+              {/* Quick Fill for Testing */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Testnet Quick Pre-fill (Connected Wallet):</span>
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAssignSelf("UNIVERSITY_ROLE")}
+                    className="text-[10px] px-2 py-1 rounded-lg glass-pill hover:bg-white/10 text-indigo-300 border border-indigo-500/20 transition"
+                  >
+                    + As University
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAssignSelf("CARBON_AUDITOR_ROLE")}
+                    className="text-[10px] px-2 py-1 rounded-lg glass-pill hover:bg-white/10 text-emerald-300 border border-emerald-500/20 transition"
+                  >
+                    + As Auditor
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleQuickAssignSelf("LAND_REGISTRAR_ROLE")}
+                    className="text-[10px] px-2 py-1 rounded-lg glass-pill hover:bg-white/10 text-sky-300 border border-sky-500/20 transition"
+                  >
+                    + As Registrar
+                  </button>
+                </div>
+              </div>
+
+              <form onSubmit={handleRegisterAuthority} className="space-y-3 text-xs">
+                <div>
+                  <label className="text-slate-300 block mb-1">Authority Wallet Address</label>
+                  <input
+                    type="text"
+                    value={authorityForm.address}
+                    onChange={(e) => setAuthorityForm({ ...authorityForm, address: e.target.value })}
+                    className="glass-input w-full rounded-xl px-3 py-2 text-white font-mono text-xs"
+                    placeholder="0x..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-300 block mb-1">Institutional Role</label>
+                  <select
+                    value={authorityForm.role}
+                    onChange={(e) => setAuthorityForm({ ...authorityForm, role: e.target.value })}
+                    className="glass-input w-full rounded-xl px-3 py-2 text-white text-xs bg-slate-900"
+                  >
+                    <option value="UNIVERSITY_ROLE">UNIVERSITY_ROLE (Issue Academic Degrees)</option>
+                    <option value="CARBON_AUDITOR_ROLE">CARBON_AUDITOR_ROLE (Mint & Verify Carbon Credits)</option>
+                    <option value="LAND_REGISTRAR_ROLE">LAND_REGISTRAR_ROLE (Cadastral Land & Liens)</option>
+                    <option value="DEFAULT_ADMIN_ROLE">DEFAULT_ADMIN_ROLE (Protocol Admin Privileges)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 block mb-1">Institution Legal Name</label>
+                  <input
+                    type="text"
+                    value={authorityForm.name}
+                    onChange={(e) => setAuthorityForm({ ...authorityForm, name: e.target.value })}
+                    className="glass-input w-full rounded-xl px-3 py-2 text-white"
+                    placeholder="e.g. Stanford University / National Cadastre"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-slate-300 block mb-1">Jurisdiction</label>
+                    <input
+                      type="text"
+                      value={authorityForm.jurisdiction}
+                      onChange={(e) => setAuthorityForm({ ...authorityForm, jurisdiction: e.target.value })}
+                      className="glass-input w-full rounded-xl px-3 py-2 text-white"
+                      placeholder="e.g. Singapore"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-300 block mb-1">Registration ID</label>
+                    <input
+                      type="text"
+                      value={authorityForm.registrationId}
+                      onChange={(e) => setAuthorityForm({ ...authorityForm, registrationId: e.target.value })}
+                      className="glass-input w-full rounded-xl px-3 py-2 text-white"
+                      placeholder="e.g. REG-UNIV-001"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-slate-300 block mb-1">Official Website</label>
+                  <input
+                    type="url"
+                    value={authorityForm.officialWebsite}
+                    onChange={(e) => setAuthorityForm({ ...authorityForm, officialWebsite: e.target.value })}
+                    className="glass-input w-full rounded-xl px-3 py-2 text-white"
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={txLoading}
+                  className="w-full bg-gradient-to-r from-purple-500 to-indigo-500 hover:from-purple-400 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-purple-500/20 disabled:opacity-50 mt-2"
+                >
+                  {txLoading ? "Broadcasting to MST Blockchain..." : "Register Authority On-Chain"}
+                </button>
+              </form>
+            </div>
+
+            {/* List: Registered Authorities Directory */}
+            <div className="lg:col-span-2 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                    <Building2 className="h-5 w-5 text-emerald-400" />
+                    <span>Registered Institutional Authorities On-Chain</span>
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Live records verified in <code>AuthorityRegistry.sol</code> on MST Chain.
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    const { provider } = await getProviderAndSigner();
+                    await fetchOnChainData(account, provider);
+                  }}
+                  className="p-2 rounded-xl glass-pill hover:bg-white/10 text-slate-300 text-xs flex items-center space-x-1.5 transition"
+                >
+                  <RefreshCw className="h-3.5 w-3.5" />
+                  <span>Refresh</span>
+                </button>
+              </div>
+
+              {authoritiesList.length === 0 ? (
+                <div className="glass-card rounded-2xl p-12 text-center text-xs text-slate-400">
+                  No institutional authorities loaded from the live contract yet. Register your first authority using the form or connect an authorized wallet.
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {authoritiesList.map((auth, idx) => (
+                    <div key={idx} className="glass-card rounded-2xl p-5 space-y-3 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-start justify-between">
+                          <span className={`text-[10px] font-mono px-2.5 py-0.5 rounded-full border font-bold ${
+                            auth.roleTitle.includes("University")
+                              ? "bg-indigo-500/20 text-indigo-300 border-indigo-500/40"
+                              : auth.roleTitle.includes("Carbon")
+                              ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                              : "bg-sky-500/20 text-sky-300 border-sky-500/40"
+                          }`}>
+                            {auth.roleTitle}
+                          </span>
+
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            auth.isActive ? "bg-emerald-500/15 text-emerald-400" : "bg-rose-500/15 text-rose-400"
+                          }`}>
+                            {auth.isActive ? "● Active" : "○ Inactive"}
+                          </span>
+                        </div>
+
+                        <h4 className="text-base font-bold text-white">{auth.name}</h4>
+                        <div className="space-y-1 text-xs text-slate-400">
+                          <p><span className="text-slate-500">Jurisdiction:</span> {auth.jurisdiction}</p>
+                          <p><span className="text-slate-500">Registration ID:</span> <span className="font-mono text-slate-300">{auth.registrationId}</span></p>
+                          <p className="truncate"><span className="text-slate-500">Address:</span> <span className="font-mono text-[11px] text-slate-300">{auth.address}</span></p>
+                        </div>
+                      </div>
+
+                      <div className="pt-3 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                        {auth.officialWebsite ? (
+                          <a
+                            href={auth.officialWebsite}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-cyan-400 hover:text-white flex items-center space-x-1 text-[11px] transition font-medium"
+                          >
+                            <span>Website</span>
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : <span />}
+
+                        {userRoles.isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleToggleAuthorityStatus(auth.address, auth.isActive)}
+                            disabled={txLoading}
+                            className={`text-[10px] font-bold px-2.5 py-1 rounded-lg transition ${
+                              auth.isActive
+                                ? "bg-rose-500/20 text-rose-300 hover:bg-rose-500/30"
+                                : "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30"
+                            }`}
+                          >
+                            {auth.isActive ? "Deactivate" : "Activate"}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </main>
       )}

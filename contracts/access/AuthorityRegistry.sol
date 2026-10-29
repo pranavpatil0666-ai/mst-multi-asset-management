@@ -24,6 +24,7 @@ contract AuthorityRegistry is AccessControl {
     }
 
     mapping(address => AuthorityProfile) private _profiles;
+    address[] private _authorityAddresses;
 
     event AuthorityRegistered(
         address indexed authority,
@@ -69,6 +70,7 @@ contract AuthorityRegistry is AccessControl {
         });
 
         _grantRole(role, authority);
+        _authorityAddresses.push(authority);
 
         emit AuthorityRegistered(authority, role, name, jurisdiction, registrationId);
     }
@@ -96,5 +98,19 @@ contract AuthorityRegistry is AccessControl {
     function getAuthorityProfile(address authority) external view returns (AuthorityProfile memory) {
         if (_profiles[authority].registeredAt == 0) revert AuthorityNotRegistered(authority);
         return _profiles[authority];
+    }
+
+    /**
+     * @notice Returns all registered authority addresses.
+     */
+    function getAllAuthorities() external view returns (address[] memory) {
+        return _authorityAddresses;
+    }
+
+    /**
+     * @notice Returns total number of registered authorities.
+     */
+    function getAuthoritiesCount() external view returns (uint256) {
+        return _authorityAddresses.length;
     }
 }

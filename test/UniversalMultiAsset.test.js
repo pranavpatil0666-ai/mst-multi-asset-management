@@ -110,6 +110,17 @@ describe("Universal Multi-Asset Management System on MST Blockchain", function (
         )
       ).to.be.reverted;
     });
+
+    it("should list all registered authorities and track count", async function () {
+      const count = await authorityRegistry.getAuthoritiesCount();
+      expect(count).to.equal(3n);
+
+      const all = await authorityRegistry.getAllAuthorities();
+      expect(all.length).to.equal(3);
+      expect(all[0]).to.equal(university.address);
+      expect(all[1]).to.equal(auditor.address);
+      expect(all[2]).to.equal(registrar.address);
+    });
   });
 
   describe("2. Academic Degree Certificates (Soulbound ERC-721)", function () {

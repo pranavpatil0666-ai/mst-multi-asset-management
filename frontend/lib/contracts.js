@@ -38,8 +38,15 @@ export const CONTRACT_ADDRESSES = {
 
 export const AUTHORITY_REGISTRY_ABI = [
   "function registerAuthority(address authority, bytes32 role, string name, string jurisdiction, string officialWebsite, string registrationId) external",
+  "function setAuthorityStatus(address authority, bool isActive) external",
   "function isAuthorized(address authority, bytes32 role) external view returns (bool)",
   "function getAuthorityProfile(address authority) external view returns (tuple(string name, string jurisdiction, string officialWebsite, string registrationId, bool isActive, uint256 registeredAt))",
+  "function getAllAuthorities() external view returns (address[])",
+  "function getAuthoritiesCount() external view returns (uint256)",
+  "function hasRole(bytes32 role, address account) external view returns (bool)",
+  "function grantRole(bytes32 role, address account) external",
+  "function revokeRole(bytes32 role, address account) external",
+  "function DEFAULT_ADMIN_ROLE() external view returns (bytes32)",
   "function UNIVERSITY_ROLE() external view returns (bytes32)",
   "function CARBON_AUDITOR_ROLE() external view returns (bytes32)",
   "function LAND_REGISTRAR_ROLE() external view returns (bytes32)"
