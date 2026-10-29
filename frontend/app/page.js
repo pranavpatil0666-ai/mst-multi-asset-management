@@ -21,7 +21,16 @@ import {
   Sparkles,
   Settings,
   Tag,
-  Loader2
+  Loader2,
+  Cpu,
+  Layers,
+  Globe,
+  Zap,
+  Code2,
+  BookOpen,
+  ChevronRight,
+  Database,
+  Check
 } from "lucide-react";
 import {
   MST_NETWORKS,
@@ -36,7 +45,7 @@ import {
 } from "../lib/contracts";
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState("portfolio");
+  const [activeTab, setActiveTab] = useState("landing"); // 'landing' | 'portfolio' | 'institution' | 'marketplace'
   const [account, setAccount] = useState("");
   const [balance, setBalance] = useState("0");
   const [chainId, setChainId] = useState(null);
@@ -45,10 +54,10 @@ export default function Home() {
   const [txLoading, setTxLoading] = useState(false);
   const [showConfig, setShowConfig] = useState(false);
 
-  // Editable Contract Addresses (defaulted to deployed addresses)
+  // Editable Contract Addresses
   const [addresses, setAddresses] = useState(CONTRACT_ADDRESSES);
 
-  // REAL ON-CHAIN ASSET STATES (Initialized Empty, ZERO Simulation)
+  // REAL ON-CHAIN ASSET STATES (Zero Simulation)
   const [degrees, setDegrees] = useState([]);
   const [landParcels, setLandParcels] = useState([]);
   const [carbonCredits, setCarbonCredits] = useState([]);
@@ -125,11 +134,10 @@ export default function Home() {
       setLoading(true);
       const { Contract, formatEther } = await import("ethers");
 
-      // Update Native Balance
       const bal = await provider.getBalance(currentAccount);
       setBalance(formatEther(bal));
 
-      // 1. Fetch Real Degrees
+      // 1. Fetch Degrees
       try {
         const degreeContract = new Contract(addresses.AcademicDegreeCertificate, DEGREE_ABI, provider);
         const degreeIds = await degreeContract.getStudentDegrees(currentAccount);
@@ -153,11 +161,10 @@ export default function Home() {
         }
         setDegrees(fetchedDegrees);
       } catch (err) {
-        console.warn("Could not query degree contract:", err.message);
         setDegrees([]);
       }
 
-      // 2. Fetch Real Land Titles
+      // 2. Fetch Land Titles
       try {
         const landContract = new Contract(addresses.LandOwnershipTitle, LAND_TITLE_ABI, provider);
         const landIds = await landContract.getOwnerParcels(currentAccount);
@@ -189,11 +196,10 @@ export default function Home() {
         }
         setLandParcels(fetchedLand);
       } catch (err) {
-        console.warn("Could not query land contract:", err.message);
         setLandParcels([]);
       }
 
-      // 3. Fetch Real Carbon Retirement Receipts
+      // 3. Fetch Carbon Retirement Receipts
       try {
         const receiptContract = new Contract(addresses.CarbonRetirementReceipt, CARBON_RECEIPT_ABI, provider);
         const receiptIds = await receiptContract.getCertificatesOf(currentAccount);
@@ -217,15 +223,13 @@ export default function Home() {
         }
         setRetirementReceipts(fetchedReceipts);
       } catch (err) {
-        console.warn("Could not query carbon receipt contract:", err.message);
         setRetirementReceipts([]);
       }
 
-      // 4. Fetch Real Active Marketplace Listings
+      // 4. Fetch Marketplace Listings
       try {
         const marketplaceContract = new Contract(addresses.UniversalMarketplace, MARKETPLACE_ABI, provider);
         const fetchedListings = [];
-        // Scan listings 1 to 20
         for (let i = 1; i <= 20; i++) {
           try {
             const listing = await marketplaceContract.getListing(i);
@@ -241,12 +245,11 @@ export default function Home() {
               });
             }
           } catch {
-            break; // Stop when non-existent listing reached
+            break;
           }
         }
         setMarketplaceListings(fetchedListings);
       } catch (err) {
-        console.warn("Could not query marketplace listings:", err.message);
         setMarketplaceListings([]);
       }
     } catch (err) {
@@ -332,14 +335,13 @@ export default function Home() {
         transcriptIpfsUri: degreeForm.transcriptIpfsUri || "ipfs://QmEmpty",
       });
 
-      setStatusMsg(`Transaction Broadcast: ${tx.hash}. Waiting for block confirmation...`);
+      setStatusMsg(`Tx broadcast: ${tx.hash.slice(0, 14)}... Awaiting block confirmation...`);
       await tx.wait();
 
-      setStatusMsg(`Success! Soulbound Degree issued on MST Chain (Tx: ${tx.hash.slice(0, 10)}...).`);
+      setStatusMsg(`Success! Soulbound Degree issued on MST Chain.`);
       setDegreeForm({ student: "", studentName: "", studentId: "", degreeName: "", major: "", graduationDate: "", transcriptIpfsUri: "" });
       await fetchOnChainData(account, provider);
     } catch (err) {
-      console.error(err);
       setStatusMsg("Transaction Reverted: " + (err.reason || err.message));
     } finally {
       setTxLoading(false);
@@ -368,14 +370,13 @@ export default function Home() {
         auditReportIpfsUri: carbonForm.auditReportIpfsUri || "ipfs://QmAudit",
       });
 
-      setStatusMsg(`Tx submitted: ${tx.hash}. Awaiting confirmation...`);
+      setStatusMsg(`Tx submitted: ${tx.hash.slice(0, 14)}... Awaiting confirmation...`);
       await tx.wait();
 
       setStatusMsg(`Success! Carbon Credit Batch minted on MST Chain.`);
       setCarbonForm({ recipient: "", projectId: "", standard: "Verra VCS", methodology: "VM0007", vintageYear: "2025", countryCode: "IND", tonnes: "100", auditReportIpfsUri: "" });
       await fetchOnChainData(account, provider);
     } catch (err) {
-      console.error(err);
       setStatusMsg("Transaction Failed: " + (err.reason || err.message));
     } finally {
       setTxLoading(false);
@@ -401,14 +402,13 @@ export default function Home() {
         retireForm.reason
       );
 
-      setStatusMsg(`Tx submitted: ${tx.hash}. Burning credits on-chain...`);
+      setStatusMsg(`Tx submitted: ${tx.hash.slice(0, 14)}... Burning credits on-chain...`);
       await tx.wait();
 
       setStatusMsg(`Offset Completed! Credits burned on MST Chain & Soulbound Receipt minted.`);
       setRetireForm({ tokenId: "", tonnes: "", beneficiaryName: "", reason: "" });
       await fetchOnChainData(account, provider);
     } catch (err) {
-      console.error(err);
       setStatusMsg("Retirement Failed: " + (err.reason || err.message));
     } finally {
       setTxLoading(false);
@@ -436,46 +436,14 @@ export default function Home() {
         deedDocumentIpfsUri: landForm.deedDocumentIpfsUri || "ipfs://QmDeedDoc",
       });
 
-      setStatusMsg(`Tx submitted: ${tx.hash}. Waiting for block confirmation...`);
+      setStatusMsg(`Tx submitted: ${tx.hash.slice(0, 14)}... Waiting for confirmation...`);
       await tx.wait();
 
       setStatusMsg(`Success! Cadastral Land Title registered on MST Chain.`);
       setLandForm({ owner: "", parcelIdentifier: "", jurisdiction: "", coordinatesPolygon: "", areaSquareMeters: "", deedRegistryHash: "", deedDocumentIpfsUri: "" });
       await fetchOnChainData(account, provider);
     } catch (err) {
-      console.error(err);
       setStatusMsg("Land Registration Failed: " + (err.reason || err.message));
-    } finally {
-      setTxLoading(false);
-    }
-  }
-
-  // Real On-Chain Action: Update Encumbrance / Lien
-  async function handleRealSetEncumbrance(e) {
-    e.preventDefault();
-    try {
-      setTxLoading(true);
-      const { provider, signer } = await getProviderAndSigner();
-      const { Contract } = await import("ethers");
-
-      const landContract = new Contract(addresses.LandOwnershipTitle, LAND_TITLE_ABI, signer);
-
-      setStatusMsg("Updating lien status on-chain... Confirm in wallet.");
-      const tx = await landContract.setEncumbrance(
-        Number(encumbranceForm.tokenId),
-        encumbranceForm.isEncumbered,
-        encumbranceForm.reason || "Updated by registrar"
-      );
-
-      setStatusMsg(`Tx submitted: ${tx.hash}. Confirming on MST Chain...`);
-      await tx.wait();
-
-      setStatusMsg(`Lien status updated successfully on-chain!`);
-      setEncumbranceForm({ tokenId: "", isEncumbered: true, reason: "" });
-      await fetchOnChainData(account, provider);
-    } catch (err) {
-      console.error(err);
-      setStatusMsg("Encumbrance Update Failed: " + (err.reason || err.message));
     } finally {
       setTxLoading(false);
     }
@@ -521,7 +489,6 @@ export default function Home() {
       setListForm({ assetType: "ERC721", tokenId: "", amount: "1", priceInMSTC: "" });
       await fetchOnChainData(account, provider);
     } catch (err) {
-      console.error(err);
       setStatusMsg("Listing Failed: " + (err.reason || err.message));
     } finally {
       setTxLoading(false);
@@ -542,13 +509,12 @@ export default function Home() {
       setStatusMsg(`Initiating on-chain purchase of ${listing.amount} unit(s)... Please confirm in wallet.`);
       const tx = await marketplaceContract.buyItem(listing.listingId, listing.amount, { value: totalCost });
 
-      setStatusMsg(`Purchase broadcast: ${tx.hash}. Escrow settling...`);
+      setStatusMsg(`Purchase broadcast: ${tx.hash.slice(0, 14)}... Escrow settling...`);
       await tx.wait();
 
       setStatusMsg(`Trade confirmed on-chain! Asset transferred to your wallet.`);
       await fetchOnChainData(account, provider);
     } catch (err) {
-      console.error(err);
       setStatusMsg("Purchase Failed: " + (err.reason || err.message));
     } finally {
       setTxLoading(false);
@@ -576,15 +542,20 @@ export default function Home() {
   return (
     <div className="relative min-h-screen bg-[#050814] text-slate-100 overflow-x-hidden">
       {/* Background Ambient Glow Orbs */}
-      <div className="ambient-orb w-[600px] h-[600px] bg-emerald-500/10 -top-40 -left-40" />
-      <div className="ambient-orb w-[550px] h-[550px] bg-indigo-600/15 top-80 -right-40" />
-      <div className="ambient-orb w-[500px] h-[500px] bg-cyan-500/10 bottom-10 left-1/3" />
+      <div className="ambient-orb w-[650px] h-[650px] bg-emerald-500/10 -top-40 -left-40" />
+      <div className="ambient-orb w-[600px] h-[600px] bg-indigo-600/15 top-96 -right-40" />
+      <div className="ambient-orb w-[550px] h-[550px] bg-cyan-500/10 bottom-20 left-1/3" />
+      <div className="ambient-orb w-[450px] h-[450px] bg-amber-500/10 top-1/2 left-10" />
 
       {/* Top Glass Navigation Bar */}
       <header className="sticky top-0 z-50 px-6 py-4 border-b border-white/[0.08] bg-[#090e1f]/60 backdrop-blur-2xl">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3.5">
-            <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 p-[1.5px] shadow-lg shadow-emerald-500/20">
+          {/* Logo & Protocol Title */}
+          <button
+            onClick={() => setActiveTab("landing")}
+            className="flex items-center space-x-3.5 text-left group"
+          >
+            <div className="h-11 w-11 rounded-2xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-cyan-400 p-[1.5px] shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition">
               <div className="h-full w-full rounded-[14px] bg-slate-950/80 backdrop-blur-sm flex items-center justify-center font-black text-emerald-400 text-lg">
                 MST
               </div>
@@ -593,15 +564,51 @@ export default function Home() {
               <div className="flex items-center space-x-2">
                 <h1 className="font-extrabold text-lg text-white tracking-tight">MST Multi-Asset Hub</h1>
                 <span className="text-[10px] font-semibold tracking-wider bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full uppercase">
-                  Live On-Chain
+                  RWA Layer 1
                 </span>
               </div>
-              <p className="text-xs text-slate-400">Direct Smart Contract Protocol (No Simulation)</p>
+              <p className="text-xs text-slate-400">Real-World Asset & Credential Infrastructure</p>
             </div>
-          </div>
+          </button>
 
+          {/* Navigation Links */}
+          <nav className="hidden lg:flex items-center space-x-1 glass-pill px-3 py-1.5 rounded-xl text-xs font-semibold">
+            <button
+              onClick={() => setActiveTab("landing")}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                activeTab === "landing" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab("portfolio")}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                activeTab === "portfolio" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Portfolio
+            </button>
+            <button
+              onClick={() => setActiveTab("institution")}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                activeTab === "institution" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Issuance Portal
+            </button>
+            <button
+              onClick={() => setActiveTab("marketplace")}
+              className={`px-3 py-1.5 rounded-lg transition ${
+                activeTab === "marketplace" ? "bg-white/[0.08] text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Marketplace
+            </button>
+          </nav>
+
+          {/* Network Switcher & Wallet */}
           <div className="flex items-center space-x-3">
-            {/* Network Selector */}
             <div className="hidden md:flex items-center glass-pill rounded-xl p-1 text-xs">
               <button
                 onClick={() => switchNetwork("testnet")}
@@ -625,28 +632,14 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Refresh Button */}
-            {account && (
-              <button
-                onClick={() => getProviderAndSigner().then(({ provider }) => fetchOnChainData(account, provider))}
-                disabled={loading}
-                title="Refresh On-Chain State"
-                className="glass-pill p-2 rounded-xl text-slate-400 hover:text-white transition"
-              >
-                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin text-emerald-400" : ""}`} />
-              </button>
-            )}
-
-            {/* Config Button */}
             <button
               onClick={() => setShowConfig(!showConfig)}
-              title="Contract Settings"
+              title="Contract Addresses"
               className="glass-pill p-2 rounded-xl text-slate-400 hover:text-white transition"
             >
               <Settings className="h-4 w-4" />
             </button>
 
-            {/* Wallet Button */}
             {account ? (
               <div className="flex items-center space-x-2 glass-pill rounded-xl px-3.5 py-2 text-xs">
                 <div className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400"></div>
@@ -670,14 +663,14 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Contract Settings Panel (Modal/Drawer) */}
+      {/* Contract Settings Drawer */}
       {showConfig && (
         <div className="relative z-40 max-w-7xl mx-auto px-6 pt-4">
           <div className="glass-panel p-5 rounded-2xl border-white/10 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-white flex items-center space-x-2">
                 <Settings className="h-4 w-4 text-emerald-400" />
-                <span>On-Chain Target Contract Addresses (EVM Layer 1)</span>
+                <span>On-Chain Target Smart Contract Addresses</span>
               </h3>
               <button onClick={() => setShowConfig(false)} className="text-slate-400 hover:text-white text-xs">✕ Close</button>
             </div>
@@ -698,7 +691,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* Transaction Loading & Status Banner */}
+      {/* Toast Notification */}
       {statusMsg && (
         <div className="relative z-40 max-w-7xl mx-auto px-6 pt-4">
           <div className="glass-panel border-emerald-500/30 bg-emerald-950/30 text-emerald-200 px-4 py-3 rounded-xl flex items-center justify-between text-xs shadow-lg shadow-emerald-950/40">
@@ -715,48 +708,314 @@ export default function Home() {
         </div>
       )}
 
-      {/* Main Glass Navigation Tabs */}
-      <div className="relative z-20 max-w-7xl mx-auto px-6 pt-6">
-        <div className="glass-panel p-1.5 rounded-2xl flex space-x-2 border-white/[0.08]">
-          <button
-            onClick={() => setActiveTab("portfolio")}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${
-              activeTab === "portfolio"
-                ? "bg-white/[0.08] text-white shadow-lg border border-white/10"
-                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-            }`}
-          >
-            <ShieldCheck className="h-4 w-4 text-emerald-400" />
-            <span>My On-Chain Portfolio</span>
-          </button>
+      {/* ======================================================== */}
+      {/* 🌟 LANDING PAGE: PROJECT OVERVIEW & INFORMATION */}
+      {/* ======================================================== */}
+      {activeTab === "landing" && (
+        <main className="relative z-10 max-w-7xl mx-auto px-6 py-12 space-y-20">
+          {/* Hero Section */}
+          <section className="text-center max-w-4xl mx-auto space-y-6 pt-6">
+            <div className="inline-flex items-center space-x-2 glass-pill px-4 py-1.5 rounded-full text-xs font-semibold text-emerald-300 shadow-lg shadow-emerald-500/10">
+              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <span>Next-Gen RWA & Credential Infrastructure on MST Blockchain</span>
+            </div>
 
-          <button
-            onClick={() => setActiveTab("institution")}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${
-              activeTab === "institution"
-                ? "bg-white/[0.08] text-white shadow-lg border border-white/10"
-                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-            }`}
-          >
-            <Building2 className="h-4 w-4 text-indigo-400" />
-            <span>Institutional Issuance Portal</span>
-          </button>
+            <h1 className="text-4xl md:text-6xl font-black text-white tracking-tight leading-[1.15]">
+              Universal Multi-Asset <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400">
+                Management Protocol
+              </span>
+            </h1>
 
-          <button
-            onClick={() => setActiveTab("marketplace")}
-            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition ${
-              activeTab === "marketplace"
-                ? "bg-white/[0.08] text-white shadow-lg border border-white/10"
-                : "text-slate-400 hover:text-slate-200 hover:bg-white/[0.03]"
-            }`}
-          >
-            <Store className="h-4 w-4 text-cyan-400" />
-            <span>MSTC Marketplace & Escrow</span>
-          </button>
-        </div>
-      </div>
+            <p className="text-base md:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto">
+              A decentralized framework uniting <strong>Soulbound Academic Degrees</strong>, <strong>Certified Carbon Credits</strong>, and <strong>Cadastral Land Titles</strong> on the high-throughput <strong>MST Blockchain (EVM L1)</strong>.
+            </p>
 
-      {/* TAB 1: PORTFOLIO VIEW (LIVE BLOCKCHAIN DATA) */}
+            {/* Hero CTAs */}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
+              {account ? (
+                <button
+                  onClick={() => setActiveTab("portfolio")}
+                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-extrabold px-8 py-3.5 rounded-xl text-sm transition shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2"
+                >
+                  <span>Launch My Portfolio</span>
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              ) : (
+                <button
+                  onClick={connectWallet}
+                  className="w-full sm:w-auto bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 text-slate-950 font-extrabold px-8 py-3.5 rounded-xl text-sm transition shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2"
+                >
+                  <Wallet className="h-4 w-4" />
+                  <span>Connect MST Wallet</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => setActiveTab("marketplace")}
+                className="w-full sm:w-auto glass-pill hover:bg-white/[0.08] text-slate-200 font-semibold px-8 py-3.5 rounded-xl text-sm transition flex items-center justify-center space-x-2"
+              >
+                <Store className="h-4 w-4 text-cyan-400" />
+                <span>Explore MSTC Marketplace</span>
+              </button>
+            </div>
+
+            {/* Key Metric Badges */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 text-left">
+              <div className="glass-card p-5 rounded-2xl">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Throughput</span>
+                <span className="text-2xl font-black text-white mt-1 block">4,000+ TPS</span>
+                <span className="text-xs text-emerald-400 mt-1 block">PoSA Consensus</span>
+              </div>
+              <div className="glass-card p-5 rounded-2xl">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Block Time</span>
+                <span className="text-2xl font-black text-white mt-1 block">~3 Seconds</span>
+                <span className="text-xs text-indigo-400 mt-1 block">Instant Finality</span>
+              </div>
+              <div className="glass-card p-5 rounded-2xl">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Native Coin</span>
+                <span className="text-2xl font-black text-white mt-1 block">MSTC</span>
+                <span className="text-xs text-cyan-400 mt-1 block">Gas & Settlement</span>
+              </div>
+              <div className="glass-card p-5 rounded-2xl">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block">Architecture</span>
+                <span className="text-2xl font-black text-white mt-1 block">EVM L1</span>
+                <span className="text-xs text-amber-400 mt-1 block">Solidity 0.8.24</span>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: 4 Core Asset Classes */}
+          <section className="space-y-8">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white tracking-tight">
+                Architected for Heterogeneous Real-World Assets
+              </h2>
+              <p className="text-xs md:text-sm text-slate-400">
+                Different asset classes require tailored token standards, legal permissioning, and transferability mechanics.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Asset 1: Degrees */}
+              <div className="glass-card rounded-2xl p-7 space-y-4 relative overflow-hidden group">
+                <div className="h-12 w-12 rounded-2xl bg-indigo-500/15 border border-indigo-500/20 text-indigo-400 flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="glass-pill text-[10px] font-mono text-amber-300 px-2 py-0.5 rounded">ERC-5192 / Soulbound</span>
+                  <span className="text-[10px] text-slate-400">Non-Transferable</span>
+                </div>
+                <h3 className="text-lg font-bold text-white">Academic Degree Certificates</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Permanently bound to the recipient's wallet address. Issued exclusively by accredited universities registered in the AuthorityRegistry. Tamper-proof, verifiable via public RPC, with on-chain revocation support.
+                </p>
+                <ul className="text-xs text-slate-400 space-y-2 pt-2 border-t border-white/[0.06]">
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Zero transferability (anti-fraud)</span></li>
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>IPFS encrypted transcript hash</span></li>
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Institutional university signature</span></li>
+                </ul>
+              </div>
+
+              {/* Asset 2: Carbon Credits */}
+              <div className="glass-card rounded-2xl p-7 space-y-4 relative overflow-hidden group">
+                <div className="h-12 w-12 rounded-2xl bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                  <Trees className="h-6 w-6" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="glass-pill text-[10px] font-mono text-emerald-300 px-2 py-0.5 rounded">ERC-1155 Multi-Token</span>
+                  <span className="text-[10px] text-slate-400">Tradeable & Retirable</span>
+                </div>
+                <h3 className="text-lg font-bold text-white">Carbon Credits & Proof of Impact</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Semi-fungible tokens representing certified metric tonnes of CO2e across specific projects and vintages. Developers can trade fractions, and enterprises can permanently retire (burn) credits to mint non-transferable Proof-of-Offset receipts.
+                </p>
+                <ul className="text-xs text-slate-400 space-y-2 pt-2 border-t border-white/[0.06]">
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Verra VCS & Gold Standard verified</span></li>
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>On-chain burn mechanism (anti double-count)</span></li>
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Soulbound Proof-of-Offset certificate</span></li>
+                </ul>
+              </div>
+
+              {/* Asset 3: Land Ownership */}
+              <div className="glass-card rounded-2xl p-7 space-y-4 relative overflow-hidden group">
+                <div className="h-12 w-12 rounded-2xl bg-sky-500/15 border border-sky-500/20 text-sky-400 flex items-center justify-center">
+                  <MapPin className="h-6 w-6" />
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="glass-pill text-[10px] font-mono text-sky-300 px-2 py-0.5 rounded">ERC-721 Deed NFT</span>
+                  <span className="text-[10px] text-slate-400">Lien Guard Protected</span>
+                </div>
+                <h3 className="text-lg font-bold text-white">Cadastral Land Titles & Property</h3>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Unique 1-of-1 digital property deeds tied to official government cadastral survey numbers, GIS polygon boundaries, and deed registry documents. Registrars can place active mortgage liens that programmatically lock transfers.
+                </p>
+                <ul className="text-xs text-slate-400 space-y-2 pt-2 border-t border-white/[0.06]">
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Official municipal registrar notarization</span></li>
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Encumbrance & mortgage lock flag</span></li>
+                  <li className="flex items-center space-x-2"><Check className="h-3.5 w-3.5 text-emerald-400" /><span>Atomic marketplace settlement in MSTC</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: How It Works Lifecycle */}
+          <section className="glass-panel rounded-3xl p-8 md:p-12 border-white/10 space-y-8">
+            <div className="text-center max-w-2xl mx-auto space-y-2">
+              <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">End-to-End Workflow</span>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-white">How the MST Protocol Operates</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-xs">
+              <div className="space-y-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                <div className="h-8 w-8 rounded-xl bg-emerald-500/20 text-emerald-400 font-black flex items-center justify-center">1</div>
+                <h4 className="font-bold text-white text-sm">Institutional Notarization</h4>
+                <p className="text-slate-400">
+                  Universities, carbon auditors, and municipal land registrars are granted specialized cryptographic roles in <code>AuthorityRegistry.sol</code>.
+                </p>
+              </div>
+
+              <div className="space-y-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                <div className="h-8 w-8 rounded-xl bg-indigo-500/20 text-indigo-400 font-black flex items-center justify-center">2</div>
+                <h4 className="font-bold text-white text-sm">Smart Contract Minting</h4>
+                <p className="text-slate-400">
+                  Authorities mint digital assets directly to user wallets, anchoring document hashes and IPFS metadata on the MST Blockchain.
+                </p>
+              </div>
+
+              <div className="space-y-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                <div className="h-8 w-8 rounded-xl bg-cyan-500/20 text-cyan-400 font-black flex items-center justify-center">3</div>
+                <h4 className="font-bold text-white text-sm">Escrow & Marketplace</h4>
+                <p className="text-slate-400">
+                  Transferable assets (land titles, carbon credits) can be listed on <code>UniversalMarketplace.sol</code> and settled in native MSTC coin with 1% fee.
+                </p>
+              </div>
+
+              <div className="space-y-3 p-4 rounded-2xl bg-white/[0.02] border border-white/[0.06]">
+                <div className="h-8 w-8 rounded-xl bg-amber-500/20 text-amber-400 font-black flex items-center justify-center">4</div>
+                <h4 className="font-bold text-white text-sm">Retirement & Audit</h4>
+                <p className="text-slate-400">
+                  Corporations offset carbon footprints by burning tokens to mint Soulbound certificates, guaranteeing zero double-spending.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Section: Network Specifications */}
+          <section className="space-y-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+              <div>
+                <span className="text-xs font-bold text-emerald-400 uppercase tracking-widest">Network Architecture</span>
+                <h2 className="text-2xl md:text-3xl font-extrabold text-white mt-1">MST Blockchain Network Parameters</h2>
+              </div>
+              <div className="flex space-x-2 text-xs">
+                <button
+                  onClick={() => switchNetwork("testnet")}
+                  className="glass-pill px-4 py-2 rounded-xl text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/20 transition font-semibold"
+                >
+                  Add Testnet to MetaMask
+                </button>
+                <button
+                  onClick={() => switchNetwork("mainnet")}
+                  className="glass-pill px-4 py-2 rounded-xl text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/20 transition font-semibold"
+                >
+                  Add Mainnet to MetaMask
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
+              {/* Testnet Card */}
+              <div className="glass-card rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-white text-base">MST Testnet</h3>
+                  <span className="glass-pill px-2.5 py-0.5 rounded text-emerald-400 font-mono">Chain ID: 4545</span>
+                </div>
+                <div className="space-y-2 text-slate-300">
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-slate-400">RPC Endpoint:</span>
+                    <span className="font-mono text-emerald-400">https://testnetrpc.mstblockchain.com</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-slate-400">Currency Symbol:</span>
+                    <span className="font-bold text-white">tMSTC</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-slate-400">Block Explorer:</span>
+                    <a href="https://testnet.mstscan.com" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline flex items-center space-x-1">
+                      <span>testnet.mstscan.com</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mainnet Card */}
+              <div className="glass-card rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-white text-base">MST Mainnet</h3>
+                  <span className="glass-pill px-2.5 py-0.5 rounded text-emerald-400 font-mono">Chain ID: 4646 (0x1226)</span>
+                </div>
+                <div className="space-y-2 text-slate-300">
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-slate-400">RPC Endpoint:</span>
+                    <span className="font-mono text-emerald-400">https://mariorpc.mstblockchain.com</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-slate-400">Currency Symbol:</span>
+                    <span className="font-bold text-white">MSTC</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-white/[0.06]">
+                    <span className="text-slate-400">Block Explorer:</span>
+                    <a href="https://mstscan.com" target="_blank" rel="noreferrer" className="text-cyan-400 hover:underline flex items-center space-x-1">
+                      <span>mstscan.com</span>
+                      <ExternalLink className="h-3 w-3" />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Quick Launch Bottom Banner */}
+          <section className="glass-panel rounded-3xl p-8 text-center space-y-4 border-emerald-500/20 bg-gradient-to-br from-emerald-950/20 via-slate-900/60 to-cyan-950/20">
+            <h3 className="text-2xl font-extrabold text-white">Ready to interact with real on-chain assets?</h3>
+            <p className="text-xs text-slate-300 max-w-xl mx-auto">
+              Enter the dApp to issue verified academic credentials, manage cadastral real estate titles, or buy and retire certified carbon credits.
+            </p>
+            <div className="pt-2">
+              <button
+                onClick={() => setActiveTab("portfolio")}
+                className="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-3 rounded-xl text-xs transition shadow-lg shadow-emerald-500/20"
+              >
+                Enter dApp Dashboard
+              </button>
+            </div>
+          </section>
+
+          {/* Footer */}
+          <footer className="pt-12 border-t border-white/[0.08] flex flex-col md:flex-row items-center justify-between text-xs text-slate-500 gap-4">
+            <div className="flex items-center space-x-2">
+              <div className="h-6 w-6 rounded-lg bg-emerald-500/20 flex items-center justify-center font-bold text-emerald-400 text-xs">M</div>
+              <span>MST Multi-Asset Hub • Built on MST Blockchain</span>
+            </div>
+            <div className="flex items-center space-x-6">
+              <a href="https://github.com/pranavpatil0666-ai/mst-multi-asset-management" target="_blank" rel="noreferrer" className="hover:text-slate-300 transition flex items-center space-x-1">
+                <Code2 className="h-3.5 w-3.5" />
+                <span>GitHub Repository</span>
+              </a>
+              <a href="https://mstblockchain.com" target="_blank" rel="noreferrer" className="hover:text-slate-300 transition flex items-center space-x-1">
+                <Globe className="h-3.5 w-3.5" />
+                <span>MST Blockchain Platform</span>
+              </a>
+            </div>
+          </footer>
+        </main>
+      )}
+
+      {/* ======================================================== */}
+      {/* 📊 TAB 1: MY ON-CHAIN PORTFOLIO */}
+      {/* ======================================================== */}
       {activeTab === "portfolio" && (
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-10">
           {!account ? (
@@ -872,7 +1131,7 @@ export default function Home() {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <MapPin className="h-5 w-5 text-sky-400" />
-                    <h3 className="text-lg font-bold text-white">Cadastral Land Titles & Property Deeds</h3>
+                    <h3 className="text-lg font-bold text-white">Cadastral Land Titles & Deeds</h3>
                   </div>
                   <span className="glass-pill text-sky-300 text-xs px-3 py-1 rounded-full font-medium">ERC-721 Property Deeds</span>
                 </div>
@@ -968,7 +1227,9 @@ export default function Home() {
         </main>
       )}
 
-      {/* TAB 2: INSTITUTIONAL ISSUANCE PORTAL (REAL CONTRACT CALLS) */}
+      {/* ======================================================== */}
+      {/* 🏛️ TAB 2: INSTITUTIONAL ISSUANCE PORTAL */}
+      {/* ======================================================== */}
       {activeTab === "institution" && (
         <main className="relative z-10 max-w-5xl mx-auto px-6 py-8 space-y-8">
           <div className="glass-panel rounded-2xl p-6 border-white/10">
@@ -1262,7 +1523,9 @@ export default function Home() {
         </main>
       )}
 
-      {/* TAB 3: MARKETPLACE & ESCROW (REAL CONTRACT CALLS) */}
+      {/* ======================================================== */}
+      {/* 🛒 TAB 3: MARKETPLACE & ESCROW */}
+      {/* ======================================================== */}
       {activeTab === "marketplace" && (
         <main className="relative z-10 max-w-7xl mx-auto px-6 py-8 space-y-6">
           <div className="glass-panel rounded-2xl p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-white/10">
