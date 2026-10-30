@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import {
   GraduationCap,
   Trees,
@@ -42,6 +43,7 @@ import {
   Menu,
   X,
   Copy,
+  Presentation,
 } from "lucide-react";
 import {
   MST_NETWORKS,
@@ -1138,6 +1140,16 @@ export default function Home() {
               </span>
             </button>
 
+            {/* Pitch Deck / Presentation Link */}
+            <Link
+              href="/presentation"
+              title="Official Project Pitch Deck & Slides"
+              className="px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 transition-all duration-200 border bg-red-500/10 text-red-300 border-red-500/30 hover:bg-red-500/20 shadow-[0_0_15px_rgba(239,68,68,0.15)] group"
+            >
+              <Presentation className="h-3.5 w-3.5 text-red-400 group-hover:scale-110 transition-transform" />
+              <span className="hidden sm:inline font-semibold">Pitch Deck</span>
+            </Link>
+
             {/* Contract Settings Gear */}
             <button
               onClick={() => setShowConfig(!showConfig)}
@@ -1308,6 +1320,19 @@ export default function Home() {
                 </button>
               );
             })}
+            <Link
+              href="/presentation"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold text-red-300 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition mt-2"
+            >
+              <div className="flex items-center space-x-3">
+                <Presentation className="h-4 w-4 text-red-400" />
+                <span>Project Pitch Deck</span>
+              </div>
+              <span className="text-[10px] bg-red-500/20 text-red-300 px-2 py-0.5 rounded-md font-mono">
+                SLIDES
+              </span>
+            </Link>
           </div>
         )}
       </header>
