@@ -1473,38 +1473,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* Official Ecosystem & Partners Ticker */}
-            <div className="pt-6 border-t border-white/[0.06] max-w-3xl mx-auto">
-              <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-3">
-                MST Ecosystem & Strategic Partners
-              </p>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                {[
-                  "BridgeKey Wallet (Native MST)",
-                  "SARAL Protocol",
-                  "WASMify",
-                  "FortunaX",
-                  "ProofEasy",
-                  "ChainPay",
-                  "MasterStroke Academy",
-                  "QuillAudits",
-                  "Yellow Capital",
-                  "Fireblocks",
-                ].map((partner) => (
-                  <span
-                    key={partner}
-                    className={`glass-pill px-3 py-1 rounded-lg text-[11px] font-semibold border transition ${
-                      partner.includes("BridgeKey")
-                        ? "text-red-300 border-red-500/40 bg-red-500/10 shadow-sm shadow-red-600/20"
-                        : "text-slate-300 border-white/10 hover:border-red-500/30 hover:text-white"
-                    }`}
-                  >
-                    {partner}
-                  </span>
-                ))}
-              </div>
-            </div>
-
             {/* Key Metric Badges */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 text-left">
               <div className="glass-card p-5 rounded-2xl border-white/10 hover:border-red-500/30">
