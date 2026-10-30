@@ -37,42 +37,42 @@ export default function PresentationPage() {
     // SLIDE 1: Cover
     {
       id: "cover",
-      badge: "MST BLOCKCHAIN HACKATHON // OFFICIAL PITCH DECK",
-      title: "Universal Multi-Asset Management System",
+      badge: "MST BLOCKCHAIN HACKATHON // SIMPLE PITCH DECK",
+      title: "Universal Multi-Asset Hub",
       subtitle:
-        "An enterprise-grade decentralized platform uniting Soulbound Academic Degrees, Certified Carbon Credits, and Cadastral Land Titles on the MST Blockchain (EVM L1).",
+        "A secure digital platform on MST Blockchain to issue, verify, and trade real-world assets: College Degrees, Carbon Credits, and Land Titles with zero fraud.",
       content: (
         <div className="space-y-8 mt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left">
-              <span className="text-[11px] font-mono text-red-400 block mb-1">PROJECT NAME</span>
-              <p className="text-base font-bold text-white">MST Multi-Asset Hub</p>
-              <p className="text-xs text-slate-400 mt-1">Enterprise Real-World Asset Platform</p>
+              <span className="text-[11px] font-mono text-red-400 block mb-1">WHAT IS IT?</span>
+              <p className="text-base font-bold text-white">Real-World Asset Hub</p>
+              <p className="text-xs text-slate-400 mt-1">Stop fake degrees, fake carbon credits & land fraud</p>
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left">
-              <span className="text-[11px] font-mono text-red-400 block mb-1">TEAM NAME & LEADER</span>
+              <span className="text-[11px] font-mono text-red-400 block mb-1">TEAM & LEADER</span>
               <p className="text-base font-bold text-white">MST Alpha Innovators</p>
               <p className="text-xs text-slate-400 mt-1">Pranav Patil (pranavpatil0666@gmail.com)</p>
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left">
-              <span className="text-[11px] font-mono text-red-400 block mb-1">TARGET INFRASTRUCTURE</span>
-              <p className="text-base font-bold text-white">MST Blockchain (EVM L1)</p>
-              <p className="text-xs text-slate-400 mt-1">PoSA • 4,000+ TPS • BridgeKey Native</p>
+              <span className="text-[11px] font-mono text-red-400 block mb-1">POWERED BY</span>
+              <p className="text-base font-bold text-white">MST Blockchain (L1)</p>
+              <p className="text-xs text-slate-400 mt-1">~3-Sec Speed • Pennies in Fees • BridgeKey Wallet</p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
             <span className="px-3 py-1 rounded-full text-xs font-mono bg-red-500/10 text-red-400 border border-red-500/20">
-              ERC-5192 Soulbound
+              Fake-Proof Degrees
             </span>
             <span className="px-3 py-1 rounded-full text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              ERC-1155 Carbon Batches
+              Verified Green Credits
             </span>
             <span className="px-3 py-1 rounded-full text-xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/20">
-              ERC-721 Encumbered Land Deeds
+              Safe Land Deeds
             </span>
             <span className="px-3 py-1 rounded-full text-xs font-mono bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
-              Pinata IPFS Cloud
+              Safe Cloud Storage
             </span>
           </div>
         </div>
@@ -82,19 +82,18 @@ export default function PresentationPage() {
     // SLIDE 2: Problem Statement
     {
       id: "problem",
-      badge: "THE CHALLENGE",
-      title: "The Fragmentation & Vulnerability of Real-World Assets",
-      subtitle: "Current Web3 and legacy institutional systems fail to handle heterogeneous legal and economic requirements.",
+      badge: "THE REAL WORLD PROBLEM",
+      title: "The 3 Big Problems We Solve",
+      subtitle: "Important real-world documents are easy to fake, double-use, or sell illegally today.",
       content: (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 text-left">
           <div className="p-6 rounded-2xl bg-red-950/20 border border-red-500/30 space-y-3">
             <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 w-fit text-red-400">
               <Award className="h-6 w-6" />
             </div>
-            <h3 className="text-lg font-bold text-white">Academic Credential Fraud</h3>
+            <h3 className="text-lg font-bold text-white">1. Fake College Degrees</h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Unverifiable paper and PDF degrees can be easily forged. Standard NFTs fail because degrees must be 
-              <strong> strictly non-transferable</strong> (Soulbound) while protecting student privacy.
+              Paper and PDF certificates are easily faked. Normal crypto tokens can be sold to anyone—which is bad because a student should <strong>never be able to resell their degree</strong> to someone else.
             </p>
           </div>
 
@@ -102,10 +101,9 @@ export default function PresentationPage() {
             <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 w-fit text-emerald-400">
               <Leaf className="h-6 w-6" />
             </div>
-            <h3 className="text-lg font-bold text-white">Carbon Double-Spending</h3>
+            <h3 className="text-lg font-bold text-white">2. Fake Carbon Offsets</h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Voluntary carbon markets are fraught with greenwashing and double-counting. Offsetting requires 
-              <strong> irreversible on-chain burning</strong> that produces immutable proof-of-retirement.
+              Companies claim they offset pollution, but the same tree or green credit is often claimed multiple times. There is <strong>no permanent proof of retirement</strong>.
             </p>
           </div>
 
@@ -113,10 +111,9 @@ export default function PresentationPage() {
             <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 w-fit text-amber-400">
               <Landmark className="h-6 w-6" />
             </div>
-            <h3 className="text-lg font-bold text-white">Land Title & Lien Conflicts</h3>
+            <h3 className="text-lg font-bold text-white">3. Land Frauds & Hidden Loans</h3>
             <p className="text-xs text-slate-300 leading-relaxed">
-              Real estate deeds require <strong>legal encumbrance enforcement</strong>. If a property is mortgaged or in dispute, 
-              transfers must be cryptographically locked until released by authorities.
+              Fraudsters sell land that still has an active bank mortgage or court dispute. Innocent buyers lose their life savings because paper land records are slow and unclear.
             </p>
           </div>
         </div>
@@ -126,39 +123,39 @@ export default function PresentationPage() {
     // SLIDE 3: Proposed Solution
     {
       id: "solution",
-      badge: "OUR ARCHITECTURE",
-      title: "Heterogeneous Multi-Standard Asset Engine",
-      subtitle: "A purpose-built smart contract suite aligning token standards with exact legal asset mechanics.",
+      badge: "OUR SOLUTION",
+      title: "Three Smart Rules for Three Types of Assets",
+      subtitle: "Instead of treating everything like a simple crypto coin, we give each asset the exact real-world rules it needs.",
       content: (
         <div className="space-y-6 mt-4 text-left">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
               <span className="text-[10px] font-mono text-cyan-400 font-bold px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
-                ERC-5192 SOULBOUND
+                LOCKED TO STUDENT
               </span>
-              <h4 className="text-base font-bold text-white">Degrees & Diplomas</h4>
+              <h4 className="text-base font-bold text-white">College Degrees</h4>
               <p className="text-xs text-slate-400">
-                Permanently locked to student wallets upon issuance. Keccak256 hashed IDs for GDPR compliance and on-chain revocation verification.
+                Degrees stay locked forever to the student's wallet. They cannot be resold or transferred, stopping diploma fraud completely.
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
               <span className="text-[10px] font-mono text-emerald-400 font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/20">
-                ERC-1155 + SOULBOUND RECEIPT
+                BURN TO RETIRE
               </span>
-              <h4 className="text-base font-bold text-white">Carbon Credit Batches</h4>
+              <h4 className="text-base font-bold text-white">Green Carbon Credits</h4>
               <p className="text-xs text-slate-400">
-                Semi-fungible project vintages (1 token = 1 tonne CO2e). Retiring credits permanently burns the token and mints a non-transferable Proof-of-Offset.
+                Companies can buy and trade credits. When ready to claim an offset, the credit is permanently burned on-chain to give real proof.
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/10 space-y-2">
               <span className="text-[10px] font-mono text-amber-400 font-bold px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/20">
-                ERC-721 + ENCUMBRANCE
+                BANK LOAN LOCK
               </span>
-              <h4 className="text-base font-bold text-white">Cadastral Land Titles</h4>
+              <h4 className="text-base font-bold text-white">Land Ownership Titles</h4>
               <p className="text-xs text-slate-400">
-                Unique GIS land parcels. Municipal registrars can flag active bank mortgage liens, halting all transfers and marketplace sales instantly.
+                Digital property deeds. When an owner takes a bank loan, the deed is locked so it cannot be sold secretly until the loan is cleared.
               </p>
             </div>
           </div>
@@ -167,14 +164,14 @@ export default function PresentationPage() {
             <div className="flex items-center space-x-3">
               <ShieldCheck className="h-6 w-6 text-red-400 shrink-0" />
               <div>
-                <p className="text-xs font-bold text-white">Institutional Authority Registry (RBAC)</p>
+                <p className="text-xs font-bold text-white">Only Verified Organizations Can Create Assets</p>
                 <p className="text-[11px] text-slate-400">
-                  Only verified institutional bodies (accredited universities, certified carbon auditors, municipal registrars) hold minting rights.
+                  Only accredited universities, certified carbon auditors, and government land offices have permission to issue documents.
                 </p>
               </div>
             </div>
             <span className="text-xs font-mono text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20 shrink-0">
-              Zero Unauthorized Minting
+              100% Verified Issuance
             </span>
           </div>
         </div>
