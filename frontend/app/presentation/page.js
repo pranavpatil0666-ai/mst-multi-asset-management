@@ -26,6 +26,7 @@ import {
   Check,
   Maximize2,
   Minimize2,
+  Download,
 } from "lucide-react";
 
 export default function PresentationPage() {
@@ -686,14 +687,25 @@ export default function PresentationPage() {
             </button>
           </div>
 
+          {/* Download Pre-rendered PDF */}
+          <a
+            href="/MST_Multi_Asset_Management_Presentation.pdf"
+            download="MST_Multi_Asset_Management_Presentation.pdf"
+            className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold flex items-center space-x-1.5 transition shadow-md shadow-red-600/30"
+            title="Download Official 11-Slide PDF Presentation"
+          >
+            <Download className="h-3.5 w-3.5" />
+            <span>Download PDF</span>
+          </a>
+
           {/* Export / Print to PDF */}
           <button
             onClick={handlePrint}
-            className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold flex items-center space-x-1.5 transition"
+            className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold flex items-center space-x-1.5 transition hidden sm:flex"
             title="Print or Save as PDF"
           >
             <Printer className="h-3.5 w-3.5 text-red-400" />
-            <span className="hidden sm:inline">Save as PDF</span>
+            <span>Print</span>
           </button>
         </div>
       </header>
