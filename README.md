@@ -46,7 +46,7 @@ The MST Multi-Asset Management System is structured into four decoupled, interop
 │   ├── UniversalAssetManager.sol (Multi-standard portfolio reader)      │
 │   └── UniversalMarketplace.sol (Escrow & Settlement in native MSTC)   │
 └───────────────────────────────────┬────────────────────────────────────┘
-                                    │ JSON-RPC (Chain ID: 4545 / 4646)
+                                    │ JSON-RPC (Chain ID: 91562037 / 4646)
 ┌───────────────────────────────────▼────────────────────────────────────┐
 │                    4. MST BLOCKCHAIN LAYER 1                           │
 │   Consensus: PoSA • Throughput: 4,000+ TPS • Block Time: ~3 Seconds   │
@@ -193,7 +193,7 @@ LandOwnershipTitle.registerLand(ownerWallet, parcelIdentifier, jurisdiction, are
 ## 🌐 MST Blockchain Network Details
 
 ### **MST Testnet**
-* **Chain ID:** `4545`
+* **Chain ID:** `91562037` (`0x5752035`)
 * **RPC Endpoint:** `https://testnetrpc.mstblockchain.com`
 * **Explorer:** [https://testnet.mstscan.com](https://testnet.mstscan.com)
 * **Native Coin:** `tMSTC`
@@ -256,7 +256,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 - **My Multi-Asset Portfolio**: Real-time overview of owned Soulbound degrees, land parcel deeds, active carbon holdings, and permanent offset receipts.
 - **Institutional Issuance Portal**: Authorized interfaces for universities to mint degrees, auditors to issue carbon batches, and registrars to register land deeds or manage mortgage liens.
 - **MSTC RWA Marketplace**: Browse and execute atomic asset purchases with native MSTC, and list owned assets for sale.
-- **BridgeKey Native Wallet Integration**: Seamless support for **BridgeKey Wallet** (Official MST non-custodial wallet by Masterstroke Technosoft) and MetaMask via EIP-1193 / EIP-6963 provider discovery, with 1-click network switching between **MST Testnet (Chain ID 4545)** and **MST Mainnet (Chain ID 4646)**.
+- **BridgeKey Native Wallet Integration**: Seamless support for **BridgeKey Wallet** (Official MST non-custodial wallet by Masterstroke Technosoft) and MetaMask via EIP-1193 / EIP-6963 provider discovery, with 1-click network switching between **MST Testnet (Chain ID 91562037)** and **MST Mainnet (Chain ID 4646)**.
 
 ---
 

@@ -25,7 +25,7 @@ module.exports = {
     },
     mstTestnet: {
       url: process.env.MST_TESTNET_RPC || "https://testnetrpc.mstblockchain.com",
-      chainId: 4545,
+      chainId: 91562037,
       accounts: [PRIVATE_KEY],
     },
     mstMainnet: {

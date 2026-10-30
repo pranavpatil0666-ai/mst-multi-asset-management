@@ -202,7 +202,7 @@ export default function TechnicalBackground() {
       </div>
 
       <div className="hidden xl:flex absolute top-24 right-8 text-[9px] font-mono text-red-500/40 tracking-widest space-y-1 flex-col items-end select-none">
-        <span>[RPC: TESTNET:4545 / MAINNET:4646]</span>
+        <span>[RPC: TESTNET:91562037 / MAINNET:4646]</span>
         <span>[STATUS: VALIDATING BLOCKS]</span>
         <span>[ENCRYPTION: SECP256K1 / KECCAK256]</span>
       </div>

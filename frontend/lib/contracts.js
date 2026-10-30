@@ -1,7 +1,7 @@
 export const MST_NETWORKS = {
   testnet: {
-    chainId: "0x11C1", // 4545 in hex
-    chainIdDecimal: 4545,
+    chainId: "0x5752035", // 91562037 in hex
+    chainIdDecimal: 91562037,
     chainName: "MST Testnet",
     nativeCurrency: {
       name: "Testnet MSTC",

@@ -167,7 +167,7 @@ export default function WalletConnectModal({
                   }`}
                 >
                   {isTestnet
-                    ? "MST Testnet (Chain 4545)"
+                    ? "MST Testnet (Chain 91562037)"
                     : isMainnet
                     ? "MST Mainnet (Chain 4646)"
                     : `Unsupported Chain (${chainId})`}

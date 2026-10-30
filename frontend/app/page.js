@@ -584,7 +584,7 @@ export default function Home() {
       const label = targetType === "bridgekey" ? "BridgeKey Wallet (Native MST)" : "MetaMask";
       setStatusMsg(`Connected with ${label}!`);
 
-      // If chainId is not MST, prompt user to add/switch to MST Testnet (Chain ID 4545)
+      // If chainId is not MST, prompt user to add/switch to MST Testnet (Chain ID 91562037)
       const currentChainNum = Number(network.chainId);
       if (
         currentChainNum !== MST_NETWORKS.testnet.chainIdDecimal &&
@@ -1800,7 +1800,7 @@ export default function Home() {
               <div className="glass-card rounded-2xl p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="font-bold text-white text-base">MST Testnet</h3>
-                  <span className="glass-pill px-2.5 py-0.5 rounded text-red-400 border border-red-500/20 font-mono">Chain ID: 4545</span>
+                  <span className="glass-pill px-2.5 py-0.5 rounded text-red-400 border border-red-500/20 font-mono">Chain ID: 91562037</span>
                 </div>
                 <div className="space-y-2 text-slate-300">
                   <div className="flex justify-between py-1 border-b border-white/[0.06]">
