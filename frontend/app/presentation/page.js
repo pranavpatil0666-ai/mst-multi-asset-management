@@ -51,7 +51,7 @@ export default function PresentationPage() {
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left">
               <span className="text-[11px] font-mono text-red-400 block mb-1">TEAM & LEADER</span>
-              <p className="text-base font-bold text-white">MST Alpha Innovators</p>
+              <p className="text-base font-bold text-white">Alpha-Mine</p>
               <p className="text-xs text-slate-400 mt-1">Pranav Patil (pranavpatil0666@gmail.com)</p>
             </div>
             <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-left">
@@ -589,7 +589,7 @@ export default function PresentationPage() {
               </h4>
               <div className="space-y-1.5 text-xs">
                 <p className="text-slate-300">
-                  <strong className="text-white">Team Name:</strong> MST Alpha Innovators
+                  <strong className="text-white">Team Name:</strong> Alpha-Mine
                 </p>
                 <p className="text-slate-300">
                   <strong className="text-white">Team Leader:</strong> Pranav Patil
