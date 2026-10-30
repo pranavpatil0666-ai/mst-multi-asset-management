@@ -204,6 +204,16 @@ LandOwnershipTitle.registerLand(ownerWallet, parcelIdentifier, jurisdiction, are
 * **Explorer:** [https://mstscan.com](https://mstscan.com)
 * **Native Coin:** `MSTC`
 
+### **Verified Live Contracts on MST Testnet (Chain ID 91562037)**
+All 7 contracts are live and actively validating on the MST Blockchain Testnet:
+* **AuthorityRegistry**: [`0x9F4dcd09DE62E1985807C74716dBB6768CE26892`](https://testnet.mstscan.com/address/0x9F4dcd09DE62E1985807C74716dBB6768CE26892)
+* **AcademicDegreeCertificate**: [`0x8913265B93D7e3d9dcc1913616E1f874b741512d`](https://testnet.mstscan.com/address/0x8913265B93D7e3d9dcc1913616E1f874b741512d)
+* **CarbonCreditBatch**: [`0xD4C901550B69069DADC5F5d8a56d4B92D45B6A60`](https://testnet.mstscan.com/address/0xD4C901550B69069DADC5F5d8a56d4B92D45B6A60)
+* **CarbonRetirementReceipt**: [`0xa28aFDa14Be5789564aE5fA03665c4180e3c680b`](https://testnet.mstscan.com/address/0xa28aFDa14Be5789564aE5fA03665c4180e3c680b)
+* **LandOwnershipTitle**: [`0x4ddcaefaD4Cd01f6dE911c33777100B1c530A85e`](https://testnet.mstscan.com/address/0x4ddcaefaD4Cd01f6dE911c33777100B1c530A85e)
+* **UniversalAssetManager**: [`0xdB587ef6aaA16b5719CDd3AaB316F0E70473e9Be`](https://testnet.mstscan.com/address/0xdB587ef6aaA16b5719CDd3AaB316F0E70473e9Be)
+* **UniversalMarketplace**: [`0xb824C5F99339C7E486a1b452B635886BE82bc8b7`](https://testnet.mstscan.com/address/0xb824C5F99339C7E486a1b452B635886BE82bc8b7)
+
 ---
 
 ## 🚀 Quick Start

@@ -27,13 +27,13 @@ export const MST_NETWORKS = {
 
 // Default deployed addresses (overridable via environment variables or connection modal)
 export const CONTRACT_ADDRESSES = {
-  AuthorityRegistry: process.env.NEXT_PUBLIC_AUTHORITY_REGISTRY || "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-  AcademicDegreeCertificate: process.env.NEXT_PUBLIC_DEGREE_CONTRACT || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
-  CarbonCreditBatch: process.env.NEXT_PUBLIC_CARBON_BATCH || "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
-  CarbonRetirementReceipt: process.env.NEXT_PUBLIC_CARBON_RECEIPT || "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
-  LandOwnershipTitle: process.env.NEXT_PUBLIC_LAND_TITLE || "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
-  UniversalAssetManager: process.env.NEXT_PUBLIC_ASSET_MANAGER || "0x0165878A594ca255338adfa4d48449f69242Eb8F",
-  UniversalMarketplace: process.env.NEXT_PUBLIC_MARKETPLACE || "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853",
+  AuthorityRegistry: process.env.NEXT_PUBLIC_AUTHORITY_REGISTRY || "0x9F4dcd09DE62E1985807C74716dBB6768CE26892",
+  AcademicDegreeCertificate: process.env.NEXT_PUBLIC_DEGREE_CONTRACT || "0x8913265B93D7e3d9dcc1913616E1f874b741512d",
+  CarbonCreditBatch: process.env.NEXT_PUBLIC_CARBON_BATCH || "0xD4C901550B69069DADC5F5d8a56d4B92D45B6A60",
+  CarbonRetirementReceipt: process.env.NEXT_PUBLIC_CARBON_RECEIPT || "0xa28aFDa14Be5789564aE5fA03665c4180e3c680b",
+  LandOwnershipTitle: process.env.NEXT_PUBLIC_LAND_TITLE || "0x4ddcaefaD4Cd01f6dE911c33777100B1c530A85e",
+  UniversalAssetManager: process.env.NEXT_PUBLIC_ASSET_MANAGER || "0xdB587ef6aaA16b5719CDd3AaB316F0E70473e9Be",
+  UniversalMarketplace: process.env.NEXT_PUBLIC_MARKETPLACE || "0xb824C5F99339C7E486a1b452B635886BE82bc8b7",
 };
 
 export const AUTHORITY_REGISTRY_ABI = [

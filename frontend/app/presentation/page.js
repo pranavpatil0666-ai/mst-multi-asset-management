@@ -401,37 +401,37 @@ export default function PresentationPage() {
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
               <span className="text-slate-400 block text-[10px]">1. RBAC REGISTRY</span>
               <span className="text-white font-bold">AuthorityRegistry.sol</span>
-              <span className="text-red-400 block text-[11px] truncate">0x5FbDB2315678afecb367f032d93F642f64180aa3</span>
+              <span className="text-red-400 block text-[11px] truncate">0x9F4dcd09DE62E1985807C74716dBB6768CE26892</span>
             </div>
 
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
               <span className="text-slate-400 block text-[10px]">2. SOULBOUND DEGREES</span>
               <span className="text-white font-bold">AcademicDegreeCertificate.sol</span>
-              <span className="text-red-400 block text-[11px] truncate">0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512</span>
+              <span className="text-red-400 block text-[11px] truncate">0x8913265B93D7e3d9dcc1913616E1f874b741512d</span>
             </div>
 
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
               <span className="text-slate-400 block text-[10px]">3. CARBON BATCHES</span>
               <span className="text-white font-bold">CarbonCreditBatch.sol</span>
-              <span className="text-red-400 block text-[11px] truncate">0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0</span>
+              <span className="text-red-400 block text-[11px] truncate">0xD4C901550B69069DADC5F5d8a56d4B92D45B6A60</span>
             </div>
 
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
               <span className="text-slate-400 block text-[10px]">4. OFFSET RECEIPTS</span>
               <span className="text-white font-bold">CarbonRetirementReceipt.sol</span>
-              <span className="text-red-400 block text-[11px] truncate">0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9</span>
+              <span className="text-red-400 block text-[11px] truncate">0xa28aFDa14Be5789564aE5fA03665c4180e3c680b</span>
             </div>
 
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
               <span className="text-slate-400 block text-[10px]">5. LAND TITLES</span>
               <span className="text-white font-bold">LandOwnershipTitle.sol</span>
-              <span className="text-red-400 block text-[11px] truncate">0x5FC8d32690cc91D4c39d9d3abcBD16989F875707</span>
+              <span className="text-red-400 block text-[11px] truncate">0x4ddcaefaD4Cd01f6dE911c33777100B1c530A85e</span>
             </div>
 
             <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 font-mono">
               <span className="text-slate-400 block text-[10px]">6. MARKETPLACE</span>
               <span className="text-white font-bold">UniversalMarketplace.sol</span>
-              <span className="text-red-400 block text-[11px] truncate">0xa513E6E4b8f2a923D98304ec87F64353C4D5C853</span>
+              <span className="text-red-400 block text-[11px] truncate">0xb824C5F99339C7E486a1b452B635886BE82bc8b7</span>
             </div>
           </div>
 
