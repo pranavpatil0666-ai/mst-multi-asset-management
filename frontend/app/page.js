@@ -94,7 +94,29 @@ export default function Home() {
   const [copiedAddress, setCopiedAddress] = useState(false);
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [walletType, setWalletType] = useState("bridgekey"); // 'bridgekey' | 'metamask'
+  const [walletNeedsReload, setWalletNeedsReload] = useState(false);
   const [eip6963Providers, setEip6963Providers] = useState([]);
+
+  function handleReloadPage() {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("mst_auto_connect", walletType || "bridgekey");
+      window.location.reload();
+    }
+  }
+
+  // Auto-connect after page reload if requested
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const autoConn = sessionStorage.getItem("mst_auto_connect");
+      if (autoConn) {
+        sessionStorage.removeItem("mst_auto_connect");
+        const timer = setTimeout(() => {
+          connectWithWallet(autoConn);
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   // EIP-6963 Multi-Injected Wallet Discovery
   useEffect(() => {
@@ -483,6 +505,7 @@ export default function Home() {
     try {
       setLoading(true);
       setShowWalletModal(false);
+      setWalletNeedsReload(false);
 
       const targetType = selectedType || "bridgekey";
       setWalletType(targetType);
@@ -502,8 +525,56 @@ export default function Home() {
         return;
       }
 
+      // Request accounts directly via EIP-1193 provider to avoid Ethers coalescing error wrapper
+      let accounts;
+      try {
+        if (typeof raw.request === "function") {
+          accounts = await raw.request({ method: "eth_requestAccounts", params: [] });
+        } else {
+          const browserProvider = new BrowserProvider(raw);
+          accounts = await browserProvider.send("eth_requestAccounts", []);
+        }
+      } catch (reqErr) {
+        const errJson = typeof reqErr === "object" ? JSON.stringify(reqErr) : String(reqErr);
+        const errMsg = String(reqErr?.message || reqErr?.reason || errJson || "");
+
+        // Detect Chrome extension invalidated port or update
+        if (
+          errMsg.includes("BridgeKey was updated") ||
+          errMsg.includes("Refresh this page") ||
+          errJson.includes("Refresh this page") ||
+          errMsg.includes("Extension context invalidated") ||
+          reqErr?.code === -32003 ||
+          reqErr?.code === -32000
+        ) {
+          setWalletNeedsReload(true);
+          setStatusMsg("BridgeKey extension was recently installed or updated. Click below to Refresh Page and connect.");
+          setLoading(false);
+          return;
+        }
+
+        if (reqErr?.code === 4001 || errMsg.includes("User rejected") || errMsg.includes("user rejected")) {
+          setStatusMsg("Connection request was cancelled in your wallet.");
+          setLoading(false);
+          return;
+        }
+
+        if (reqErr?.code === -32002 || errMsg.includes("already pending")) {
+          setStatusMsg("Connection request already pending. Please open your BridgeKey / MetaMask extension to approve.");
+          setLoading(false);
+          return;
+        }
+
+        throw reqErr;
+      }
+
+      if (!accounts || accounts.length === 0) {
+        setStatusMsg("No accounts returned. Please unlock your wallet and approve the connection.");
+        setLoading(false);
+        return;
+      }
+
       const browserProvider = new BrowserProvider(raw);
-      const accounts = await browserProvider.send("eth_requestAccounts", []);
       const network = await browserProvider.getNetwork();
 
       const userAddr = accounts[0];
@@ -519,13 +590,23 @@ export default function Home() {
         currentChainNum !== MST_NETWORKS.testnet.chainIdDecimal &&
         currentChainNum !== MST_NETWORKS.mainnet.chainIdDecimal
       ) {
-        await switchNetwork("testnet", raw);
+        try {
+          await switchNetwork("testnet", raw);
+        } catch (netErr) {
+          console.warn("Network switch deferred:", netErr);
+        }
       }
 
       await fetchOnChainData(userAddr, browserProvider);
     } catch (err) {
       console.error(err);
-      setStatusMsg("Connection error: " + (err.reason || err.message));
+      const errStr = typeof err === "object" ? (err.message || JSON.stringify(err)) : String(err);
+      if (errStr.includes("BridgeKey was updated") || errStr.includes("Refresh this page")) {
+        setWalletNeedsReload(true);
+        setStatusMsg("BridgeKey extension was updated. Click below to Refresh Page and connect.");
+      } else {
+        setStatusMsg("Connection error: " + (err.reason || err.message || "Failed to connect wallet."));
+      }
     } finally {
       setLoading(false);
     }
@@ -1398,17 +1479,44 @@ export default function Home() {
 
       {/* Toast Notification */}
       {statusMsg && (
-        <div className="relative z-40 max-w-7xl mx-auto px-6 pt-4">
-          <div className="glass-panel border-red-500/30 bg-red-950/40 text-red-200 px-4 py-3 rounded-xl flex items-center justify-between text-xs shadow-lg shadow-red-950/50">
-            <div className="flex items-center space-x-2.5">
+        <div className="relative z-40 max-w-7xl mx-auto px-6 pt-4 animate-in fade-in duration-200">
+          <div
+            className={`glass-panel px-4 py-3 rounded-xl flex items-center justify-between text-xs shadow-lg ${
+              walletNeedsReload
+                ? "border-amber-500/40 bg-amber-950/60 text-amber-200 shadow-amber-950/50"
+                : "border-red-500/30 bg-red-950/40 text-red-200 shadow-red-950/50"
+            }`}
+          >
+            <div className="flex items-center space-x-2.5 flex-wrap gap-y-2">
               {txLoading ? (
                 <Loader2 className="h-4 w-4 text-red-400 animate-spin shrink-0" />
+              ) : walletNeedsReload ? (
+                <RefreshCw className="h-4 w-4 text-amber-400 shrink-0" />
               ) : (
                 <Sparkles className="h-4 w-4 text-red-400 shrink-0" />
               )}
               <span className="font-medium">{statusMsg}</span>
+
+              {walletNeedsReload && (
+                <button
+                  type="button"
+                  onClick={handleReloadPage}
+                  className="mst-btn-primary px-3 py-1.5 text-xs flex items-center space-x-1.5 shadow-md shadow-red-600/30 ml-2"
+                >
+                  <RefreshCw className="h-3 w-3" />
+                  <span>Refresh & Connect Now</span>
+                </button>
+              )}
             </div>
-            <button onClick={() => setStatusMsg("")} className="text-slate-400 hover:text-white text-sm ml-4">✕</button>
+            <button
+              onClick={() => {
+                setStatusMsg("");
+                setWalletNeedsReload(false);
+              }}
+              className="text-slate-400 hover:text-white text-sm ml-4 shrink-0"
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}

@@ -35,14 +35,19 @@ export function detectBridgeKey(eip6963Providers = []) {
   }
 
   // 2. window.ethereum.isBridgeKey flag
-  if (window.ethereum && window.ethereum.isBridgeKey === true) {
+  if (
+    window.ethereum &&
+    (window.ethereum.isBridgeKey === true ||
+      window.ethereum.isBridgekey === true ||
+      window.ethereum.bridgekey === true)
+  ) {
     return true;
   }
 
   // 3. EIP-5749 / Multi-injected window.ethereum.providers
   if (window.ethereum && Array.isArray(window.ethereum.providers)) {
     const hasBk = window.ethereum.providers.some(
-      (p) => p.isBridgeKey === true || p.bridgekey === true
+      (p) => p.isBridgeKey === true || p.isBridgekey === true || p.bridgekey === true
     );
     if (hasBk) return true;
   }
@@ -55,6 +60,11 @@ export function detectBridgeKey(eip6963Providers = []) {
       return name.includes("bridgekey") || rdns.includes("bridgekey");
     });
     if (hasEipBk) return true;
+  }
+
+  // 5. If window.ethereum exists in browser, permit connection attempt
+  if (typeof window.ethereum !== "undefined") {
+    return true;
   }
 
   return false;
@@ -70,13 +80,18 @@ export function getBridgeKeyProvider(eip6963Providers = []) {
     return window.bridgekey;
   }
 
-  if (window.ethereum && window.ethereum.isBridgeKey === true) {
+  if (
+    window.ethereum &&
+    (window.ethereum.isBridgeKey === true ||
+      window.ethereum.isBridgekey === true ||
+      window.ethereum.bridgekey === true)
+  ) {
     return window.ethereum;
   }
 
   if (window.ethereum && Array.isArray(window.ethereum.providers)) {
     const bk = window.ethereum.providers.find(
-      (p) => p.isBridgeKey === true || p.bridgekey === true
+      (p) => p.isBridgeKey === true || p.isBridgekey === true || p.bridgekey === true
     );
     if (bk) return bk;
   }
@@ -90,7 +105,7 @@ export function getBridgeKeyProvider(eip6963Providers = []) {
     if (eipBk?.provider) return eipBk.provider;
   }
 
-  // Fallback: if user picked BridgeKey and only window.ethereum exists, return window.ethereum
+  // Fallback: window.ethereum (BridgeKey injects as window.ethereum in Chromium/Brave)
   return window.ethereum || null;
 }
 

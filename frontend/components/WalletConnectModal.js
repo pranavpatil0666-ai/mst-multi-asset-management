@@ -230,13 +230,7 @@ export default function WalletConnectModal({
           <div className="space-y-4">
             {/* OPTION 1: BridgeKey Wallet (FEATURED & OFFICIAL) */}
             <div
-              onClick={() => {
-                if (isBridgeKeyDetected) {
-                  onSelectWallet("bridgekey");
-                } else {
-                  setShowInstallGuide(true);
-                }
-              }}
+              onClick={() => onSelectWallet("bridgekey")}
               className="relative group p-4 rounded-2xl border border-red-500/35 bg-gradient-to-r from-red-950/25 via-[#160d13] to-[#0f0b12] hover:border-red-500/70 cursor-pointer transition-all duration-300 shadow-lg shadow-red-950/40 hover:shadow-red-600/20 hover:-translate-y-0.5"
             >
               <div className="flex items-start justify-between gap-3">
@@ -269,12 +263,12 @@ export default function WalletConnectModal({
                   {isBridgeKeyDetected ? (
                     <span className="inline-flex items-center space-x-1 text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-2.5 py-1 rounded-full">
                       <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <span>Detected</span>
+                      <span>Ready</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center space-x-1 text-[11px] font-bold text-amber-300 bg-amber-500/10 border border-amber-500/30 px-2.5 py-1 rounded-full">
                       <Download className="h-3 w-3" />
-                      <span>Install</span>
+                      <span>Install / Connect</span>
                     </span>
                   )}
                 </div>
@@ -326,6 +320,26 @@ export default function WalletConnectModal({
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Extension Reload Helper Note */}
+            <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between text-xs text-slate-400">
+              <span className="flex items-center space-x-2">
+                <RefreshCw className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                <span>Recently installed or updated BridgeKey?</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    sessionStorage.setItem("mst_auto_connect", "bridgekey");
+                    window.location.reload();
+                  }
+                }}
+                className="text-red-400 hover:text-red-300 font-bold hover:underline shrink-0 ml-2"
+              >
+                Reload Tab to Activate
+              </button>
             </div>
 
             {/* BridgeKey Download & Guidance Drawer */}
